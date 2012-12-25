@@ -20,7 +20,7 @@ export SKY_MODEL_SW_VER_POSTFIX=$SKY_MODEL_SW_VER_MJ$SKY_MODEL_SW_VER_MN
 fi
 
 #export TARGET_BUILD_SKY_MODEL_ID=MODEL_"$SYS_MODEL_NAME"
-export CMD_D_ANDROID_OUT=../out/target/product/msm8660_surf
+export CMD_D_ANDROID_OUT=../../../out/target/product/presto
 export TARGET_BUILD_SKY_FIRMWARE_VER=$SKY_MODEL_SW_VER_PREFIX$SKY_MODEL_SW_VER_POSTFIX
 #export BOARD_REV_INCLUDE=../../../BOARD_REV.h
 export TARGET_BUILD_SKY_BOARD_REV_INCLUDE_DIR="../../../../../../../"
@@ -34,7 +34,7 @@ SKY_KERNEL_FLAGS+="-I$TARGET_BUILD_SKY_BOARD_REV_INCLUDE_DIR -include $TARGET_BU
 echo "$SKY_KERNEL_FLAGS"
 
 export ARCH=arm
-export CROSS_COMPILE=../prebuilt/linux-x86/toolchain/arm-eabi-4.4.0/bin/arm-eabi-
+export CROSS_COMPILE=../../../prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
 
 make 
 

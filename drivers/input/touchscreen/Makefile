@@ -74,7 +74,8 @@ obj-$(CONFIG_TOUCHSCREEN_MELFAS_TKI)		+=tki_melfas.o
 
 # TKI Build
 #obj-m := tki_melfas.o
-KDIR := ../../../../out/target/product/msm8660_surf/obj/KERNEL_OBJ/
+#KDIR := ../../../../../out/target/product/msm8660_surf/obj/KERNEL_OBJ/
+KDIR := ../../../../../../../out/target/product/presto/obj/KERNEL_OBJ/
 PWD := $(shell pwd)
 EXTRA_CFLAGS += -include ../../../include/BOARD_REV.h
 all: 

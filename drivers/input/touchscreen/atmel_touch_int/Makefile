@@ -6,7 +6,9 @@
 obj-$(CONFIG_TOUCHSCREEN_QT602240) += qt602240.o
 #obj-m := qt602240.o
 
-KDIR := ../../../../../out/target/product/msm8660_surf/obj/KERNEL_OBJ/
+#KDIR := ../../../../../out/target/product/msm8660_surf/obj/KERNEL_OBJ/
+KDIR := ../../../../../../../out/target/product/presto/obj/KERNEL_OBJ/
+
 PWD := $(shell pwd)
 
 EXTRA_CFLAGS += -include ../../../../include/BOARD_REV.h

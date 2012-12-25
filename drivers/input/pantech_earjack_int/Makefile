@@ -6,7 +6,8 @@
 obj-$(CONFIG_INPUT_PANTECH_EARJACK) += pantech_earjack.o  
 #obj-m := pantech_earjack.o
 
-KDIR := ../../../../out/target/product/msm8660_surf/obj/KERNEL_OBJ/
+#KDIR := ../../../../../out/target/product/msm8660_surf/obj/KERNEL_OBJ/
+KDIR := ../../../../../../../out/target/product/presto/obj/KERNEL_OBJ/
 PWD := $(shell pwd)
 
 EXTRA_CFLAGS += -include ../../../include/BOARD_REV.h
