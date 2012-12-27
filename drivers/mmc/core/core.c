@@ -1430,7 +1430,7 @@ static unsigned int mmc_erase_timeout(struct mmc_card *card,
 		return mmc_mmc_erase_timeout(card, arg, qty);
 }
 
-static int __maybe_unused mmc_do_erase(struct mmc_card *card, unsigned int from,
+static int mmc_do_erase(struct mmc_card *card, unsigned int from,
 			unsigned int to, unsigned int arg)
 {
 	struct mmc_command cmd = {0};
@@ -1543,12 +1543,66 @@ out:
 int mmc_erase(struct mmc_card *card, unsigned int from, unsigned int nr,
 	      unsigned int arg)
 {
-	return -EOPNOTSUPP;
+	unsigned int rem, to = from + nr;
+
+	if (!(card->host->caps & MMC_CAP_ERASE) ||
+	    !(card->csd.cmdclass & CCC_ERASE))
+		return -EOPNOTSUPP;
+
+	if (!card->erase_size)
+		return -EOPNOTSUPP;
+
+	if (mmc_card_sd(card) && arg != MMC_ERASE_ARG)
+		return -EOPNOTSUPP;
+
+	if ((arg & MMC_SECURE_ARGS) &&
+	    !(card->ext_csd.sec_feature_support & EXT_CSD_SEC_ER_EN))
+		return -EOPNOTSUPP;
+
+	if ((arg & MMC_TRIM_ARGS) &&
+	    !(card->ext_csd.sec_feature_support & EXT_CSD_SEC_GB_CL_EN))
+		return -EOPNOTSUPP;
+
+	if (arg == MMC_SECURE_ERASE_ARG) {
+		if (from % card->erase_size || nr % card->erase_size)
+			return -EINVAL;
+	}
+
+	if (arg == MMC_ERASE_ARG) {
+		rem = from % card->erase_size;
+		if (rem) {
+			rem = card->erase_size - rem;
+			from += rem;
+			if (nr > rem)
+				nr -= rem;
+			else
+				return 0;
+		}
+		rem = nr % card->erase_size;
+		if (rem)
+			nr -= rem;
+	}
+
+	if (nr == 0)
+		return 0;
+
+	to = from + nr;
+
+	if (to <= from)
+		return -EINVAL;
+
+	/* 'from' and 'to' are inclusive */
+	to -= 1;
+
+	return mmc_do_erase(card, from, to, arg);
 }
 EXPORT_SYMBOL(mmc_erase);
 
 int mmc_can_erase(struct mmc_card *card)
 {
+	if ((card->host->caps & MMC_CAP_ERASE) &&
+	    (card->csd.cmdclass & CCC_ERASE) && card->erase_size)
+		return 1;
 	return 0;
 }
 EXPORT_SYMBOL(mmc_can_erase);
