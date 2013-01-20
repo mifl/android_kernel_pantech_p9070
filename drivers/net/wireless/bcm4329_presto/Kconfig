@@ -15,14 +15,14 @@ config BCM4329_WL_RESET_GPIO
 config BCM4329_FW_PATH
 	depends on BCM4329
 	string "Firmware path"
-	default "/vendor/firmware/bcm43291.bin"
+	default "/etc/wl/bcm43291.bin"
 	---help---
 	  Path to the firmware file.
 
 config BCM4329_NVRAM_PATH
 	depends on BCM4329
 	string "NVRAM path"
-	default "/vendor/firmware/nvram.txt"
+	default "/etc/wl/nvram.txt"
 	---help---
 	  Path to the nvram file.
 
