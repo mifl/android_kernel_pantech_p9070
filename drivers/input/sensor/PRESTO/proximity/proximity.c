@@ -109,7 +109,7 @@ static void sensor_set_enable(struct device *dev, int enable)
 
 	mutex_unlock(&sensordata->enable_mutex);
 	
-#if 1 // to LCD off in calling...
+/*#if 1 // to LCD off in calling...
     if(input_pdev != NULL) {
 
               input_report_abs(input_pdev, ABS_X, -1);
@@ -118,7 +118,7 @@ static void sensor_set_enable(struct device *dev, int enable)
               input_sync(input_pdev);
     }
 #endif
-
+*/
 	dbg_func_out();
 }
 
