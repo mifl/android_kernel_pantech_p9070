@@ -423,9 +423,11 @@ void __show_regs(struct pt_regs *regs)
 {
 	unsigned long flags;
 	char buf[64];
+
 #ifdef CONFIG_PANTECH_ERR_CRASH_LOGGING
 	char symbuf[64];
 #endif
+
 	printk("CPU: %d    %s  (%s %.*s)\n",
 		raw_smp_processor_id(), print_tainted(),
 		init_utsname()->release,

@@ -648,7 +648,6 @@ struct smd_channel {
 struct edge_to_pid {
 	uint32_t	local_pid;
 	uint32_t	remote_pid;
-
 };
 
 /**
@@ -2283,12 +2282,14 @@ static int smsm_init(void)
 		smsm_info.intr_mux = smem_alloc2(SMEM_SMD_SMSM_INTR_MUX,
 						 SMSM_NUM_INTR_MUX *
 						 sizeof(uint32_t));
+
 #ifdef CONFIG_PANTECH_ERR_CRASH_LOGGING
 	if(!smsm_info.crash_buf)
 		smsm_info.crash_buf = smem_alloc2(SMEM_ID_VENDOR2,
 						 MAX_CRASH_BUF_SIZE * 
 						 sizeof(unsigned char));
 #endif
+
 	i = smsm_cb_init();
 	if (i)
 		return i;

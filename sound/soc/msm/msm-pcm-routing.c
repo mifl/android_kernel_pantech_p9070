@@ -47,6 +47,7 @@ struct msm_pcm_routing_bdai_data {
 static struct mutex routing_lock;
 
 static int fm_switch_enable;
+
 #define INT_RX_VOL_MAX_STEPS 0x2000
 #define INT_RX_VOL_GAIN 0x2000
 
@@ -190,7 +191,6 @@ void msm_pcm_routing_reg_phy_stream(int fedai_id, int dspst_id, int stream_type)
 			port_type) && msm_bedais[i].active &&
 			(test_bit(fedai_id,
 			&msm_bedais[i].fe_sessions))) {
-
 			channels = msm_bedais[i].channel;
 
 			if ((stream_type == SNDRV_PCM_STREAM_PLAYBACK) &&
@@ -1495,7 +1495,6 @@ static int msm_pcm_routing_close(struct snd_pcm_substream *substream)
 	bedai->active = 0;
 	bedai->sample_rate = 0;
 	bedai->channel = 0;
-
 	mutex_unlock(&routing_lock);
 
 	return 0;
@@ -1516,9 +1515,6 @@ static int msm_pcm_routing_prepare(struct snd_pcm_substream *substream)
 
 
 	bedai = &msm_bedais[be_id];
-
-
-
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		path_type = ADM_PATH_PLAYBACK;

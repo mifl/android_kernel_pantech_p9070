@@ -314,7 +314,6 @@ void emergency_restart(void)
 }
 EXPORT_SYMBOL_GPL(emergency_restart);
 
-
 #ifdef CONFIG_PANTECH //20110907 choiseulkee add for fast reboot, PRESTO, AT&T requirment
 int is_forced_reset = 0;
 #endif
@@ -482,6 +481,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 		//if (cmd == LINUX_REBOOT_CMD_RMNT_RESTART2)
 			emergency_remount_synchronous();
 #endif
+
 		kernel_restart(buffer);
 		break;
 

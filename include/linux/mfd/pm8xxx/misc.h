@@ -231,6 +231,7 @@ static inline int pm8xxx_hsed_bias_control(enum pm8xxx_hsed_bias bias,
 {
 	return -ENODEV;
 }
+
 #endif
 
 #endif

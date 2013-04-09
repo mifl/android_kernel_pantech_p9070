@@ -130,6 +130,7 @@ static int charm_panic_prep(struct notifier_block *this,
 		pr_info("%s: pm8xxx_stay_on E \n",__func__);
 	}
 #endif
+
 	charm_disable_irqs();
 	gpio_set_value(AP2MDM_ERRFATAL, 1);
 	gpio_set_value(AP2MDM_WAKEUP, 1);

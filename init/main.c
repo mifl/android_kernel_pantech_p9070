@@ -138,6 +138,7 @@ unsigned int sky_charging_status(void)
 }
 EXPORT_SYMBOL(sky_charging_status);
 #endif //CONFIG_SKY_CHARGING
+
 /*
  * If set, this is an indication to the drivers that reset the underlying
  * device before going ahead with the initialization otherwise driver might
@@ -518,6 +519,7 @@ asmlinkage void __init start_kernel(void)
 		battchg_pause_logo = 1;
 	}
 #endif  //CONFIG_SKY_CHARGING
+
 	/*
 	 * These use large bootmem allocations and must precede
 	 * kmem_cache_init()

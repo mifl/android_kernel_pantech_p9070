@@ -57,6 +57,7 @@ static struct gpiomux_setting i2c_active = {
 	.drv = GPIOMUX_DRV_8MA,
 	.pull = GPIOMUX_PULL_NONE,
 };
+
 #if 1//pz1946
 static struct gpiomux_setting i2c_active_gsbi3 = {
 	.func = GPIOMUX_FUNC_1,
@@ -64,6 +65,7 @@ static struct gpiomux_setting i2c_active_gsbi3 = {
 	.pull = GPIOMUX_PULL_NONE,
 };
 #endif
+
 static struct gpiomux_setting i2c_active_gsbi7 = {
 	.func = GPIOMUX_FUNC_1,
 	.drv = GPIOMUX_DRV_12MA,
@@ -282,6 +284,7 @@ static struct gpiomux_setting lcdc_suspend_cfg = {
 	.drv = GPIOMUX_DRV_2MA,
 	.pull = GPIOMUX_PULL_DOWN,
 };
+
 #ifndef CONFIG_PANTECH_AUDIO_PRESTO_AUDIENCE2020  // jmlee 20110610 audience a2020 clk
 static struct gpiomux_setting mdp_vsync_suspend_cfg = {
 	.func = GPIOMUX_FUNC_GPIO,
@@ -289,6 +292,7 @@ static struct gpiomux_setting mdp_vsync_suspend_cfg = {
 	.pull = GPIOMUX_PULL_DOWN,
 };
 #endif
+
 static struct gpiomux_setting hdmi_suspend_cfg = {
 	.func = GPIOMUX_FUNC_GPIO,
 	.drv = GPIOMUX_DRV_2MA,
@@ -348,6 +352,7 @@ static struct gpiomux_setting ts_suspended = {
 	.drv = GPIOMUX_DRV_2MA,
 	.pull = GPIOMUX_PULL_DOWN,
 };
+
 #ifndef CONFIG_PANTECH_AUDIO_PRESTO_AUDIENCE2020  // jmlee 20110610 audience a2020 clk
 static struct gpiomux_setting mdp_vsync_active_cfg = {
 	.func = GPIOMUX_FUNC_1,
@@ -355,6 +360,7 @@ static struct gpiomux_setting mdp_vsync_active_cfg = {
 	.pull = GPIOMUX_PULL_NONE,
 };
 #endif
+
 static struct gpiomux_setting hdmi_active_1_cfg = {
 	.func = GPIOMUX_FUNC_1,
 	.drv = GPIOMUX_DRV_2MA,
@@ -428,6 +434,7 @@ static struct gpiomux_setting gsbi9 = {
 	.pull = GPIOMUX_PULL_NONE,
 };
 #endif
+
 #ifdef CONFIG_SKY_BATTERY_MAX17040  // p14682 kobj 110607
 static struct gpiomux_setting gsbi11 = {
 	.func = GPIOMUX_FUNC_2,
@@ -435,6 +442,7 @@ static struct gpiomux_setting gsbi11 = {
 	.pull = GPIOMUX_PULL_NONE,
 };
 #endif  //CONFIG_SKY_BATTERY_MAX17040
+
 static struct gpiomux_setting ap2mdm_cfg = {
 	.func = GPIOMUX_FUNC_GPIO,
 	.drv = GPIOMUX_DRV_8MA,

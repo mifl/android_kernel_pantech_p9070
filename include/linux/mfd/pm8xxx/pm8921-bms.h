@@ -109,6 +109,7 @@ enum battery_type {
 	BATT_PALLADIUM,
 	BATT_DESAY,
 };
+
 /**
  * struct pm8921_bms_platform_data -
  * @batt_type:		allows to force chose battery calibration data
@@ -187,6 +188,7 @@ void pm8921_bms_charging_began(void);
  *				track of chargecycles
  */
 void pm8921_bms_charging_end(int is_battery_full);
+
 void pm8921_bms_calibrate_hkadc(void);
 /**
  * pm8921_bms_get_simultaneous_battery_voltage_and_current

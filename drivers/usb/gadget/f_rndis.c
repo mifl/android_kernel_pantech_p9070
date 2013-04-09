@@ -541,6 +541,7 @@ static int rndis_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 #ifdef CONFIG_ANDROID_PANTECH_USB_MANAGER
 	usb_interface_enum_cb(RNDIS_TYPE_FLAG);
 #endif
+
 	return 0;
 fail:
 	return -EINVAL;

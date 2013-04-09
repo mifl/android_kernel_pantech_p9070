@@ -118,6 +118,7 @@ static __u16 tcp_advertise_mss(struct sock *sk)
 	struct tcp_sock *tp = tcp_sk(sk);
 	struct dst_entry *dst = __sk_dst_get(sk);
 	int mss = tp->advmss;
+
 	if (dst) {
 		unsigned int metric = dst_metric_advmss(dst);
 

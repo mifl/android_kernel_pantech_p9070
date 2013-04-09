@@ -30,6 +30,7 @@ typedef struct smd_channel smd_channel_t;
 #define SMD_EVENT_CLOSE 3
 #define SMD_EVENT_STATUS 4
 #define SMD_EVENT_REOPEN_READY 5
+
 /*
  * SMD Processor ID's.
  *

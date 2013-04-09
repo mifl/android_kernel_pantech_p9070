@@ -531,6 +531,7 @@ frmnet_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 #else
 	ret = gport_rmnet_connect(dev);
 #endif
+
 	atomic_set(&dev->online, 1);
 
 	return ret;

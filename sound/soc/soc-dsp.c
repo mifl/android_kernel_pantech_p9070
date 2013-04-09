@@ -692,6 +692,7 @@ int soc_dsp_be_dai_trigger(struct snd_soc_pcm_runtime *fe, int stream, int cmd)
 			}
 			break;
 		}
+
 		if (ret < 0) {
 			spin_unlock_irqrestore(&fe->card->dsp_spinlock, flags);
 			return ret;

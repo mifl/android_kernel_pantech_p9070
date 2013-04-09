@@ -914,6 +914,7 @@ othc_configure_hsed(struct pm8058_othc *dd, struct platform_device *pd)
 		return rc;
 	}
 #endif
+
 	ipd = input_allocate_device();
 	if (ipd == NULL) {
 		pr_err("Unable to allocate memory\n");
