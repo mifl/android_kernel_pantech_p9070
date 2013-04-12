@@ -370,6 +370,7 @@ static void msm_snddev_poweramp_off(void)
 		msleep(30);
 	}
 }
+
 #ifndef CONFIG_SKY_SND_CTRL
 /* Regulator 8058_l10 supplies regulator 8058_ncp. */
 static struct regulator *snddev_reg_ncp;

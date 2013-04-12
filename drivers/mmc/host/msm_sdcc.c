@@ -14,7 +14,7 @@
  * Author: San Mehat (san@android.com)
  *
  */
-//#define DEBUG //(mmc)march 2012.4.24
+
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 #include <linux/init.h>
@@ -59,9 +59,7 @@
 
 #include "msm_sdcc.h"
 #include "msm_sdcc_dml.h"
-//#ifndef DEBUG
-//#define DEBUG //(mmc)march 2012.4.24
-//#endif
+
 #define DRIVER_NAME "msm-sdcc"
 
 #define DBG(host, fmt, args...)	\
@@ -2472,11 +2470,11 @@ static u32 msmsdcc_setup_pwr(struct msmsdcc_host *host, struct mmc_ios *ios)
 		ret = msmsdcc_setup_vreg(host, !!ios->vdd);
 
 	if (ret) {
-		pr_err("%s: Failed to setup voltage regulators\n", mmc_hostname(host->mmc));
+		pr_err("%s: Failed to setup voltage regulators\n",
+				mmc_hostname(host->mmc));
 		goto out;
 	}
-	//else //(mmc)march 2012.4.24
-		//printk("[presto]%s: slot_status = %d, ios->power_mode = %d\n", mmc_hostname(host->mmc), slot_status, ios->power_mode);
+
 	switch (ios->power_mode) {
 	case MMC_POWER_OFF:
 		pwr = MCI_PWR_OFF;
@@ -2501,7 +2499,7 @@ static u32 msmsdcc_setup_pwr(struct msmsdcc_host *host, struct mmc_ios *ios)
 		pwr = MCI_PWR_ON;
 		break;
 	}
-	//printk("[presto]%s: pwr = %d\n", mmc_hostname(host->mmc), pwr); //(mmc)march 2012.4.24
+
 out:
 	return pwr;
 }
@@ -2786,9 +2784,7 @@ msmsdcc_cfg_sdio_wakeup(struct msmsdcc_host *host, bool enable_wakeup_irq)
 out:
 	return;
 }
-//#ifdef CONFIG_SKY_MMC
-//extern unsigned int msm8x60_sdcc_slot_status(void);
-//#endif
+
 static void
 msmsdcc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 {
@@ -2797,9 +2793,6 @@ msmsdcc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
 	int rc;
 	unsigned long flags;
 	unsigned int clock;
-//#ifdef CONFIG_SKY_MMC
-//unsigned int slot_status;
-//#endif
 
 	DBG(host, "ios->clock = %u\n", ios->clock);
 

@@ -95,7 +95,6 @@ struct tsens_tm_device {
 	uint32_t pm_tsens_thr_data;
 };
 
-
 struct tsens_tm_device *tmdev;
 
 // p15060, MDM boot up fail fix
@@ -190,7 +189,6 @@ static int tsens_tz_set_mode(struct thermal_zone_device *thermal,
 		writel(reg, TSENS_CNTL_ADDR);
 	}
 	tm_sensor->mode = mode;
-
 
 // p15060, MDM boot up fail fix
 // MDM2AP_STATUS       -> 134

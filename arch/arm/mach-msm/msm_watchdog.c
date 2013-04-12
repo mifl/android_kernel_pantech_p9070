@@ -107,7 +107,6 @@ static int msm_watchdog_suspend(struct device *dev)
 	__raw_writel(1, msm_tmr0_base + WDT0_RST);
 	__raw_writel(0, msm_tmr0_base + WDT0_EN);
 	mb();
-
 	return 0;
 }
 
@@ -119,7 +118,6 @@ static int msm_watchdog_resume(struct device *dev)
 	__raw_writel(1, msm_tmr0_base + WDT0_EN);
 	__raw_writel(1, msm_tmr0_base + WDT0_RST);
 	mb();
-
 	return 0;
 }
 

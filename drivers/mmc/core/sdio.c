@@ -241,8 +241,9 @@ static int sdio_disable_wide(struct mmc_card *card)
 
 	return 0;
 }
-
 #endif
+
+
 static int sdio_enable_4bit_bus(struct mmc_card *card)
 {
 	int err;
@@ -670,6 +671,7 @@ static int mmc_sdio_suspend(struct mmc_host *host)
 			pmops->resume(&func->dev);
 		}
 	}
+
 #if !defined (CONFIG_PANTECH_WIFI_MMC) && !defined(CONFIG_SKY_WLAN_MMC)
 	if (!err && mmc_card_keep_power(host) && mmc_card_wake_sdio_irq(host)) {
 		mmc_claim_host(host);
@@ -684,10 +686,12 @@ static int mmc_sdio_suspend(struct mmc_host *host)
 static int mmc_sdio_resume(struct mmc_host *host)
 {
 	int i, err = 0;
+
 #if defined (CONFIG_PANTECH_WIFI_MMC) || defined(CONFIG_SKY_WLAN_MMC)
 // 20110322 khlee_wifi for wifi suspend/resume patch
 	 err = 0;
 #endif 
+
 	BUG_ON(!host);
 	BUG_ON(!host->card);
 

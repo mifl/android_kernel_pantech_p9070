@@ -44,7 +44,6 @@
 /* default data access */
 #define DEFAULT_DATA_OFFSET 2
 #define DEFAULT_DATA_SIZE 249
-
 /* Power levels are 0-7, but SOC will expect values from 0-255
  * So the each level step size will be 255/7 = 36 */
 #define FM_TX_PWR_LVL_STEP_SIZE 36

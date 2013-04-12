@@ -1189,7 +1189,6 @@ struct sensor_cfg_data {
 		int32_t reg;
 		int32_t wdr;
 #endif
-
 	} cfg;
 };
 

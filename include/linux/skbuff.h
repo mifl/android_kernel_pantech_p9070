@@ -1379,6 +1379,7 @@ static inline void skb_mac_header_rebuild(struct sk_buff *skb)
 		memmove(skb_mac_header(skb), old_mac, skb->mac_len);
 	}
 }
+
 static inline int skb_checksum_start_offset(const struct sk_buff *skb)
 {
 	return skb->csum_start - skb_headroom(skb);

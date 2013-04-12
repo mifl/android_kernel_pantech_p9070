@@ -1833,6 +1833,7 @@ struct wiphy {
 	u16 interface_modes;
 
 	u32 flags;
+
 	u32 ap_sme_capa;
 
 	enum cfg80211_signal_type signal_type;
@@ -1861,6 +1862,7 @@ struct wiphy {
 
 	u32 available_antennas_tx;
 	u32 available_antennas_rx;
+
 	/*
 	* Bitmap of supported protocols for probe response offloading
 	* see &enum nl80211_probe_resp_offload_support_attr. Only valid

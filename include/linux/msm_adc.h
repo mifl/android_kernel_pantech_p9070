@@ -176,6 +176,7 @@ enum {
 #define CHANNEL_ADC_FSM_THERM	0x12
 #define CHANNEL_ADC_PA_THERM	0x13
 #endif
+
 enum {
 	CALIB_STARTED,
 	CALIB_NOT_REQUIRED = 0xffffffff,

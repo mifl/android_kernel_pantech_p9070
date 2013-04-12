@@ -267,4 +267,5 @@ struct pm8xxx_regulator_core_platform_data {
 		.write_count	= 0, \
 		.prev_write_count = -1, \
 	}
+
 #endif

@@ -98,6 +98,7 @@ struct bt_power {
  *     than BR/EDR
  */
 #define BT_AMP_POLICY_PREFER_AMP       2
+
 #define BT_LE_PARAMS	100
 
 #define BT_LE_SCAN_WINDOW_MIN		0x0004
@@ -176,6 +177,7 @@ struct bt_le_params {
 	__u16 max_ce_len;
 	__u16 conn_timeout;
 };
+
 struct bt_sock {
 	struct sock sk;
 	bdaddr_t    src;

@@ -124,6 +124,7 @@ static int dload_set(const char *val, struct kernel_param *kp)
 #ifndef CONFIG_PANTECH_ERR_CRASH_LOGGING
 	set_dload_mode(download_mode);
 #endif
+
 	return 0;
 }
 #else

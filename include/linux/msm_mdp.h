@@ -75,12 +75,14 @@ enum {
 						struct msmfb_data)
 #define MSMFB_WRITEBACK_TERMINATE _IO(MSMFB_IOCTL_MAGIC, 155)
 #define MSMFB_MDP_PP _IOWR(MSMFB_IOCTL_MAGIC, 156, struct msmfb_mdp_pp)
+
 #ifdef CONFIG_F_SKYDISP_LCD_RESET //(lcd)march 2012.3.21
 #define MSMFB_SKY_LCD_RESET_INIT    _IOW(MSMFB_IOCTL_MAGIC, MSMFB_CTRL_INDEX_SKY_LCD_RESET_INIT, unsigned int)
 #endif
 #ifdef CONFIG_F_SKYDISP_LCD_FORCE_ONOFF 
 #define MSMFB_SKY_LCD_FORCE_ONOFF   _IOW(MSMFB_IOCTL_MAGIC, MSMFB_CTRL_INDEX_SKY_LCD_FORCE_ONOFF, unsigned int)
 #endif
+
 #define FB_TYPE_3D_PANEL 0x10101010
 #define MDP_IMGTYPE2_START 0x10000
 #define MSMFB_DRIVER_VERSION	0xF9E8D701
@@ -460,6 +462,8 @@ struct mdp_qseed_cfg_data {
 	uint32_t len;
 	uint32_t *data;
 };
+
+
 enum {
 	mdp_op_pcc_cfg,
 	mdp_op_csc_cfg,

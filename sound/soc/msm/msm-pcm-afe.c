@@ -399,6 +399,7 @@ static int msm_afe_close(struct snd_pcm_substream *substream)
 			dma_buf->area = NULL;
 		}
 	}
+
 	if (dma_buf->addr)
 		free_contiguous_memory_by_paddr(dma_buf->addr);
 done:
@@ -488,7 +489,6 @@ static int msm_afe_hw_params(struct snd_pcm_substream *substream,
 	dma_buf->dev.dev = substream->pcm->card->dev;
 	dma_buf->private_data = NULL;
 
-
 	dma_buf->addr = allocate_contiguous_ebi_nomap(
 				runtime->hw.buffer_bytes_max, SZ_4K);
 	if (!dma_buf->addr) {
@@ -497,6 +497,7 @@ static int msm_afe_hw_params(struct snd_pcm_substream *substream,
 		mutex_unlock(&prtd->lock);
 		return -ENOMEM;
 	}
+
 	flags = MSM_SUBSYSTEM_MAP_KADDR | MSM_SUBSYSTEM_MAP_CACHED;
 
 	prtd->mem_buffer = msm_subsystem_map_buffer(dma_buf->addr,
@@ -526,6 +527,7 @@ static int msm_afe_hw_params(struct snd_pcm_substream *substream,
 		mutex_unlock(&prtd->lock);
 		return -ENOMEM;
 	}
+
 	dma_buf->bytes = runtime->hw.buffer_bytes_max;
 	memset(dma_buf->area, 0, runtime->hw.buffer_bytes_max);
 	prtd->dma_addr = (u32) dma_buf->addr;

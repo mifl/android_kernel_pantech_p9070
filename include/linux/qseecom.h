@@ -151,4 +151,5 @@ struct qseecom_qseos_version_req {
 
 #define QSEECOM_IOCTL_UNLOAD_EXTERNAL_ELF_REQ \
 	_IO(QSEECOM_IOC_MAGIC, 14)
+
 #endif /* __QSEECOM_H_ */

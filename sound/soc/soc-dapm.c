@@ -1314,8 +1314,10 @@ static void dapm_seq_run(struct snd_soc_dapm_context *dapm,
 		sort = dapm_down_seq;
 
 	nWidgets = ARRAY_SIZE(dapm_up_seq);
+
 	list_for_each_entry_safe(w, n, list, power_list) {
 		ret = 0;
+
 		if (!w->name)
 			continue;
 
@@ -1506,6 +1508,7 @@ static int dapm_power_widgets(struct snd_soc_dapm_context *dapm, int event)
 	int power;
 
 	trace_snd_soc_dapm_start(card);
+
 	mutex_lock(&card->dapm_power_mutex);
 
 	list_for_each_entry(d, &card->dapm_list, list)
@@ -1616,6 +1619,7 @@ static int dapm_power_widgets(struct snd_soc_dapm_context *dapm, int event)
 	pop_dbg(dapm->dev, card->pop_time,
 		"DAPM sequencing finished, waiting %dms\n", card->pop_time);
 	pop_wait(card->pop_time);
+
 	mutex_unlock(&card->dapm_power_mutex);
 
 	trace_snd_soc_dapm_done(card);

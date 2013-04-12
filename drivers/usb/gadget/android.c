@@ -1735,7 +1735,6 @@ static int __init init(void)
 		platform_driver_unregister(&android_platform_driver);
 		goto err_probe;
 	}
-
 	return ret;
 
 err_probe:

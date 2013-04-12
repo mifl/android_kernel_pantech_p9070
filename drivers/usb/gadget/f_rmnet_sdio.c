@@ -1487,6 +1487,7 @@ int rmnet_sdio_function_add(struct usb_configuration *c)
 	struct rmnet_sdio_dev *dev;
 	int ret;
 	printk("rmnet_sdio_function_add \n");
+
 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
 	if (!dev)
 		return -ENOMEM;
