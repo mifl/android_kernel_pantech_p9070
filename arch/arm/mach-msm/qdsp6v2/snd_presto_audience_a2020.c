@@ -595,7 +595,7 @@ static a2020_path_param path_keytone_gain_param[] =
 static a2020_path_param path_ct_gain_param[] = 
 {
     { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0009 }, //0x801B:SetDigitalInputGain, 0x00:ADC0, 0x07:(9 dB)
-    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0106 }, //0x801B:SetDigitalInputGain, 0x01:ADC1, 0x07:(6 dB)
+    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x01F8 }, //0x801B:SetDigitalInputGain, 0x01:ADC1, 0x07:(6 dB)
     { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x03F8 }, //0x801B:SetDigitalInputGain, 0x03:PCM-A left, 0xF2:(-8 dB)
     { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x0209 }, //0x8015:SetDigitalOutputGain, 0x02:PCM-A left,  0x04:(9 dB)
     { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x00F8 }, //0x8015:SetDigitalOutputGain, 0x00:DAC0, 0x05:(-8 dB)
@@ -618,7 +618,7 @@ static a2020_path_param path_ct_1MIC_gain_param[] =
 static a2020_path_param path_ct_VPOFF_gain_param[] = 
 {
     { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0009 }, //Primary MIC
-    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0106 }, //Secondary MIC
+    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x01F0 }, //Secondary MIC
     { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x0209 }, //Tx
     { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x03F8 }, //Far End(Rx)
     { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x00F8 }, //Rx
