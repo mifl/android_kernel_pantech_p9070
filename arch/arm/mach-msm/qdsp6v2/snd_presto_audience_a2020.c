@@ -244,7 +244,7 @@ static a2020_algo_param algo_ct_param[] =
     	
     { A2020_CMD_ALGO_PARAMID, 0x0012, A2020_CMD_ALGO_PARAM, 0xFFEC }, //0x8017:SetAlgorithmParmID, 0x0012:   Downlink Speaker Volume, 0x8018:SetAlgorithmParm, 0xFFEC:(-20 dB)
     { A2020_CMD_ALGO_PARAMID, 0x0023, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x0023:   Use AEC Comfort Noise Fill, 0x8018:SetAlgorithmParm, 0x0000:No
-    { A2020_CMD_ALGO_PARAMID, 0x0034, A2020_CMD_ALGO_PARAM, 0xFFFB }, //0x8017:SetAlgorithmParmID, 0x0034:   Echo Suppression Enhancement, 0x8018:SetAlgorithmParm, 0x0007:(7 dB)   
+    { A2020_CMD_ALGO_PARAMID, 0x0034, A2020_CMD_ALGO_PARAM, 0x0007 }, //0x8017:SetAlgorithmParmID, 0x0034:   Echo Suppression Enhancement, 0x8018:SetAlgorithmParm, 0x0007:(7 dB)   
     { A2020_CMD_ALGO_PARAMID, 0x0004, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x0004:Use AGC, 0x8018:SetAlgorithmParm, 0x0000:No
     { A2020_CMD_ALGO_PARAMID, 0x0028, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x0028:Use Rx AGC, 0x8018:SetAlgorithmParm, 0x0000:No
 
@@ -303,7 +303,7 @@ static a2020_algo_param algo_ct_1MIC_param[] =
 static a2020_algo_param algo_ct_VPOFF_param[] =  
 {
     //Set Algorithm Parameter    
-    { A2020_CMD_ALGO_PARAMID, 0x0002, A2020_CMD_ALGO_PARAM, 0x0000 },
+    { A2020_CMD_ALGO_PARAMID, 0x0002, A2020_CMD_ALGO_PARAM, 0x0003 },
     { A2020_CMD_ALGO_PARAMID, 0x004B, A2020_CMD_ALGO_PARAM, 0x0001 },
     { A2020_CMD_ALGO_PARAMID, 0x0015, A2020_CMD_ALGO_PARAM, 0x0000 },
     { A2020_CMD_ALGO_PARAMID, 0x0016, A2020_CMD_ALGO_PARAM, 0xFFE6 },
@@ -594,10 +594,10 @@ static a2020_path_param path_keytone_gain_param[] =
 //CT Digital Gain
 static a2020_path_param path_ct_gain_param[] = 
 {
-    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0009 }, //0x801B:SetDigitalInputGain, 0x00:ADC0, 0x07:(9 dB)
-    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x01F8 }, //0x801B:SetDigitalInputGain, 0x01:ADC1, 0x07:(6 dB)
+    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x00FC }, //0x801B:SetDigitalInputGain, 0x00:ADC0, 0x07:(9 dB)
+    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x01FC }, //0x801B:SetDigitalInputGain, 0x01:ADC1, 0x07:(6 dB)
     { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x03F8 }, //0x801B:SetDigitalInputGain, 0x03:PCM-A left, 0xF2:(-8 dB)
-    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x0209 }, //0x8015:SetDigitalOutputGain, 0x02:PCM-A left,  0x04:(9 dB)
+    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x0204 }, //0x8015:SetDigitalOutputGain, 0x02:PCM-A left,  0x04:(9 dB)
     { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x00F8 }, //0x8015:SetDigitalOutputGain, 0x00:DAC0, 0x05:(-8 dB)
     //{ A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x01fe }, 
     { 0xFFFF, 0xFFFF },
@@ -617,9 +617,9 @@ static a2020_path_param path_ct_1MIC_gain_param[] =
 //CT VP Off Digital Gain
 static a2020_path_param path_ct_VPOFF_gain_param[] = 
 {
-    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0009 }, //Primary MIC
+    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x00F8 }, //Primary MIC
     { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x01F0 }, //Secondary MIC
-    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x0209 }, //Tx
+    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x0200 }, //Tx
     { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x03F8 }, //Far End(Rx)
     { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x00F8 }, //Rx
     { 0xFFFF, 0xFFFF },
@@ -2088,12 +2088,12 @@ int aud_config_path_vp_cmd_to_2020(a2020_talk_mode talk_mode)
             case CALL_SEC_MIC_TALK:
             case FAR_VPOFF_TALK:
             case DV_VPOFF_TALK: 
-            case CLOSE_VPOFF_TALK:
+//            case CLOSE_VPOFF_TALK:
             case CLOSE_1MIC_VPOFF_TALK:
                 ret_val = A2020_msg(path_vp_on_param[index].cmd, path_vp_on_param[index].value, 4);	
                 break;
 
-//	   case CLOSE_VPOFF_TALK:
+	   case CLOSE_VPOFF_TALK:
 //           case CLOSE_1MIC_VPOFF_TALK:
 //           case FAR_VPOFF_TALK:
 //           case DV_VPOFF_TALK:  
