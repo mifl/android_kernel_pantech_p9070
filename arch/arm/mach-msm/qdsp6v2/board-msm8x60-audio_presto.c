@@ -1542,7 +1542,7 @@ struct platform_device msm_nr_ct_2mic_tx_device = {
 };
 
 // DEVICE_SND_DEVICE_NR_OFF_CT_RX
-#if 0  // jykim110731@PS3
+#if 1  // jykim110731@PS3
 static struct snddev_ecodec_data snddev_e_nr_off_ct_rx_data = {
 	.capability = (SNDDEV_CAP_RX | SNDDEV_CAP_VOICE),
 	.name = "nr_off_ct_rx",
@@ -1597,7 +1597,7 @@ static struct platform_device msm_nr_off_ct_rx_device = {
 #endif
 
 // SND_DEVICE_NR_OFF_CT
-#if 0  // jykim110731@PS3
+#if 1  // jykim110731@PS3
 static struct snddev_ecodec_data snddev_e_nr_off_ct_tx_data = {
 	.capability = (SNDDEV_CAP_TX | SNDDEV_CAP_VOICE),
 	.name = "nr_off_ct_tx",
