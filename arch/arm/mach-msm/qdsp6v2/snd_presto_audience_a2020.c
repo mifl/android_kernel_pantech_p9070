@@ -31,7 +31,7 @@ static struct i2c_client *audience_a2020_i2c_client = NULL;
 
 #define CONFIG_AUDIENCE_A2020_0627    // jmlee        
 
-//#define CONFIG_AUDIENCE_DEBUG_PRINTK // jmlee 20110823
+#define CONFIG_AUDIENCE_DEBUG_PRINTK // jmlee 20110823
 
 #ifndef byte // jmlee
 #define byte u8
@@ -236,31 +236,31 @@ static a2020_algo_param algo_dv_VPOFF_param[] =
 static a2020_algo_param algo_ct_param[] = 
 {
     //Set Algorithm Parameter    
-    { A2020_CMD_ALGO_PARAMID, 0x0002, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x0002:Microphone Configuration, 0x8018:SetAlgorithmParm, 0x0000:2-mic Close Talk (CT)
-    { A2020_CMD_ALGO_PARAMID, 0x004B, A2020_CMD_ALGO_PARAM, 0x0006 }, //0x8017:SetAlgorithmParmID, 0x004B:Tx Noise Suppression Level, 0x8018:SetAlgorithmParm, 0x0006:Level 6
+    { A2020_CMD_ALGO_PARAMID, 0x0002, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x0002:Microphone Configuration, 0x8018:SetAlgorithmParm, 0x0000:2-mic Close Talk (CT) 0x0003:1M-DG (1-mic digital input)
+    { A2020_CMD_ALGO_PARAMID, 0x004B, A2020_CMD_ALGO_PARAM, 0x0002 }, //0x8017:SetAlgorithmParmID, 0x004B:Tx Noise Suppression Level, 0x8018:SetAlgorithmParm, 0x0006:Level 6
     { A2020_CMD_ALGO_PARAMID, 0x0015, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x0015:Side Tone Mode, 0x8018:SetAlgorithmParm, 0x0000:Off
     { A2020_CMD_ALGO_PARAMID, 0x0016, A2020_CMD_ALGO_PARAM, 0xFFE6 }, //0x8017:SetAlgorithmParmID, 0x0016:   Side Tone Gain (dB), 0x8018:SetAlgorithmParm, 0xFFEB:(-21 dB)
     { A2020_CMD_ALGO_PARAMID, 0x0003, A2020_CMD_ALGO_PARAM, 0x0001 }, //0x8017:SetAlgorithmParmID, 0x0003:AEC Mode, 0x8018:SetAlgorithmParm, 0x0001:AEC On (auto select mode)
     	
     { A2020_CMD_ALGO_PARAMID, 0x0012, A2020_CMD_ALGO_PARAM, 0xFFEC }, //0x8017:SetAlgorithmParmID, 0x0012:   Downlink Speaker Volume, 0x8018:SetAlgorithmParm, 0xFFEC:(-20 dB)
     { A2020_CMD_ALGO_PARAMID, 0x0023, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x0023:   Use AEC Comfort Noise Fill, 0x8018:SetAlgorithmParm, 0x0000:No
-    { A2020_CMD_ALGO_PARAMID, 0x0034, A2020_CMD_ALGO_PARAM, 0xFFFB }, //0x8017:SetAlgorithmParmID, 0x0034:   Echo Suppression Enhancement, 0x8018:SetAlgorithmParm, 0x0007:(7 dB)   
+    { A2020_CMD_ALGO_PARAMID, 0x0034, A2020_CMD_ALGO_PARAM, 0x0003 }, //0x8017:SetAlgorithmParmID, 0x0034:   Echo Suppression Enhancement, 0x8018:SetAlgorithmParm, 0x0007:(7 dB)   
     { A2020_CMD_ALGO_PARAMID, 0x0004, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x0004:Use AGC, 0x8018:SetAlgorithmParm, 0x0000:No
     { A2020_CMD_ALGO_PARAMID, 0x0028, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x0028:Use Rx AGC, 0x8018:SetAlgorithmParm, 0x0000:No
 
     { A2020_CMD_ALGO_PARAMID, 0x0009, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x0009:Speaker Enhancement Mode, 0x8018:SetAlgorithmParm, 0x0001:SE On (auto select SE mode) VEQ ???
     { A2020_CMD_ALGO_PARAMID, 0x0025, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x0025:   SE Noise Estimate Adj, 0x8018:SetAlgorithmParm, 0x0000:(0 dB) VEQ???
     { A2020_CMD_ALGO_PARAMID, 0x003D, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x003D:   SE Max Gain (dB), 0x8018:SetAlgorithmParm, 0x000B:(11 dB) VEQ???
-    { A2020_CMD_ALGO_PARAMID, 0x000E, A2020_CMD_ALGO_PARAM, 0x0001 }, //0x8017:SetAlgorithmParmID, 0x000E:Far End Noise Suppression, 0x8018:SetAlgorithmParm, 0x0001:On (auto select mode)
-    { A2020_CMD_ALGO_PARAMID, 0x004C, A2020_CMD_ALGO_PARAM, 0x0006 }, //0x8017:SetAlgorithmParmID, 0x004C:   Rx Noise Suppression Level, 0x8018:SetAlgorithmParm, 0x0006:Level 6
+    { A2020_CMD_ALGO_PARAMID, 0x000E, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x000E:Far End Noise Suppression, 0x8018:SetAlgorithmParm, 0x0001:On (auto select mode)
+    { A2020_CMD_ALGO_PARAMID, 0x004C, A2020_CMD_ALGO_PARAM, 0x0003 }, //0x8017:SetAlgorithmParmID, 0x004C:   Rx Noise Suppression Level, 0x8018:SetAlgorithmParm, 0x0006:Level 6
 
-    { A2020_CMD_ALGO_PARAMID, 0x0040, A2020_CMD_ALGO_PARAM, 0xfff7 }, //0x8017:SetAlgorithmParmID, 0x0040:Tx-out Limiter Max Level (dB), 0x8018:SetAlgorithmParm, 0xFFF7:(-9 dB)
+//    { A2020_CMD_ALGO_PARAMID, 0x0040, A2020_CMD_ALGO_PARAM, 0x0004 }, //0x8017:SetAlgorithmParmID, 0x0040:Tx-out Limiter Max Level (dB), 0x8018:SetAlgorithmParm, 0xFFF7:(-9 dB)
     
-    { A2020_CMD_ALGO_PARAMID, 0x0020, A2020_CMD_ALGO_PARAM, 0x0001 }, //0x8017:SetAlgorithmParmID, 0x0020:Tx PostEq Mode, 0x8018:SetAlgorithmParm, 0x0001:On
-    { A2020_CMD_ALGO_PARAMID, 0x001F, A2020_CMD_ALGO_PARAM, 0x0001 }, //0x8017:SetAlgorithmParmID, 0x001F:Rx PostEq Mode, 0x8018:SetAlgorithmParm, 0x0001:On
+    { A2020_CMD_ALGO_PARAMID, 0x0020, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x0020:Tx PostEq Mode, 0x8018:SetAlgorithmParm, 0x0001:On
+    { A2020_CMD_ALGO_PARAMID, 0x001F, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x001F:Rx PostEq Mode, 0x8018:SetAlgorithmParm, 0x0001:On
     { A2020_CMD_ALGO_PARAMID, 0x0030, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x0030:Tx MBC Mode, 0x8018:SetAlgorithmParm, 0x0000:Off
 #if 1 // 20111118 hw cal plm 2176 white noise remove in call
-    { A2020_CMD_ALGO_PARAMID, 0x0031, A2020_CMD_ALGO_PARAM, 0x0001 }, //0x8017:SetAlgorithmParmID, 0x0031:Rx MBC Mode, 0x8018:SetAlgorithmParm, 0x0000:Off
+    { A2020_CMD_ALGO_PARAMID, 0x0031, A2020_CMD_ALGO_PARAM, 0x0000 }, //0x8017:SetAlgorithmParmID, 0x0031:Rx MBC Mode, 0x8018:SetAlgorithmParm, 0x0000:Off
 #else
     { A2020_CMD_ALGO_PARAMID, 0x0031, A2020_CMD_ALGO_PARAM, 0x0000 },
 #endif    
@@ -299,35 +299,35 @@ static a2020_algo_param algo_ct_1MIC_param[] =
     { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF },
 };
 
-//CT VP Off
+///CT VP Off
 static a2020_algo_param algo_ct_VPOFF_param[] =  
 {
     //Set Algorithm Parameter    
     { A2020_CMD_ALGO_PARAMID, 0x0002, A2020_CMD_ALGO_PARAM, 0x0000 },
-    { A2020_CMD_ALGO_PARAMID, 0x004B, A2020_CMD_ALGO_PARAM, 0x0001 },
+    { A2020_CMD_ALGO_PARAMID, 0x004B, A2020_CMD_ALGO_PARAM, 0x0000 },
     { A2020_CMD_ALGO_PARAMID, 0x0015, A2020_CMD_ALGO_PARAM, 0x0000 },
     { A2020_CMD_ALGO_PARAMID, 0x0016, A2020_CMD_ALGO_PARAM, 0xFFE6 },
     { A2020_CMD_ALGO_PARAMID, 0x0003, A2020_CMD_ALGO_PARAM, 0x0001 },
 
     { A2020_CMD_ALGO_PARAMID, 0x0012, A2020_CMD_ALGO_PARAM, 0xFFEC },
     { A2020_CMD_ALGO_PARAMID, 0x0023, A2020_CMD_ALGO_PARAM, 0x0000 },
-    { A2020_CMD_ALGO_PARAMID, 0x0034, A2020_CMD_ALGO_PARAM, 0xFFFB },
+    { A2020_CMD_ALGO_PARAMID, 0x0034, A2020_CMD_ALGO_PARAM, 0x0006 },
     { A2020_CMD_ALGO_PARAMID, 0x0004, A2020_CMD_ALGO_PARAM, 0x0000 },
     { A2020_CMD_ALGO_PARAMID, 0x0028, A2020_CMD_ALGO_PARAM, 0x0000 },
 
     { A2020_CMD_ALGO_PARAMID, 0x0009, A2020_CMD_ALGO_PARAM, 0x0000 },
     { A2020_CMD_ALGO_PARAMID, 0x0025, A2020_CMD_ALGO_PARAM, 0x0000 },
     { A2020_CMD_ALGO_PARAMID, 0x003D, A2020_CMD_ALGO_PARAM, 0x000B },
-    { A2020_CMD_ALGO_PARAMID, 0x000E, A2020_CMD_ALGO_PARAM, 0x0001 },
-    { A2020_CMD_ALGO_PARAMID, 0x004C, A2020_CMD_ALGO_PARAM, 0x0001 },
+    { A2020_CMD_ALGO_PARAMID, 0x000E, A2020_CMD_ALGO_PARAM, 0x0000 },
+    { A2020_CMD_ALGO_PARAMID, 0x004C, A2020_CMD_ALGO_PARAM, 0x0000 },
 
-    { A2020_CMD_ALGO_PARAMID, 0x0040, A2020_CMD_ALGO_PARAM, 0xfff7 },
+//    { A2020_CMD_ALGO_PARAMID, 0x0040, A2020_CMD_ALGO_PARAM, 0x0004},
 
-    { A2020_CMD_ALGO_PARAMID, 0x0020, A2020_CMD_ALGO_PARAM, 0x0001 },
-    { A2020_CMD_ALGO_PARAMID, 0x001F, A2020_CMD_ALGO_PARAM, 0x0001 },
+    { A2020_CMD_ALGO_PARAMID, 0x0020, A2020_CMD_ALGO_PARAM, 0x0000 },
+    { A2020_CMD_ALGO_PARAMID, 0x001F, A2020_CMD_ALGO_PARAM, 0x0000 },
     { A2020_CMD_ALGO_PARAMID, 0x0030, A2020_CMD_ALGO_PARAM, 0x0000 },
 #if 1 // 20111118 hw cal plm 2176 white noise remove in call
-    { A2020_CMD_ALGO_PARAMID, 0x0031, A2020_CMD_ALGO_PARAM, 0x0001 },
+    { A2020_CMD_ALGO_PARAMID, 0x0031, A2020_CMD_ALGO_PARAM, 0x0000 },
 #else
     { A2020_CMD_ALGO_PARAMID, 0x0031, A2020_CMD_ALGO_PARAM, 0x0000 },
 #endif    
@@ -594,11 +594,11 @@ static a2020_path_param path_keytone_gain_param[] =
 //CT Digital Gain
 static a2020_path_param path_ct_gain_param[] = 
 {
-    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0009 }, //0x801B:SetDigitalInputGain, 0x00:ADC0, 0x07:(9 dB)
-    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x01F8 }, //0x801B:SetDigitalInputGain, 0x01:ADC1, 0x07:(6 dB)
+    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x000A }, //0x801B:SetDigitalInputGain, 0x00:ADC0, 0x07:(9 dB) 12
+    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0104 }, //0x801B:SetDigitalInputGain, 0x01:ADC1, 0x07:(6 dB)
     { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x03F8 }, //0x801B:SetDigitalInputGain, 0x03:PCM-A left, 0xF2:(-8 dB)
-    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x0209 }, //0x8015:SetDigitalOutputGain, 0x02:PCM-A left,  0x04:(9 dB)
-    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x00F8 }, //0x8015:SetDigitalOutputGain, 0x00:DAC0, 0x05:(-8 dB)
+    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x02F9 }, //0x8015:SetDigitalOutputGain, 0x02:PCM-A left,  0x04:(9 dB) f4
+    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x00F8 }, //0x8015:SetDigitalOutputGain, 0x00:DAC0, 0x05:(-8 dB)  without extra 00f8
     //{ A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x01fe }, 
     { 0xFFFF, 0xFFFF },
 };
@@ -617,11 +617,11 @@ static a2020_path_param path_ct_1MIC_gain_param[] =
 //CT VP Off Digital Gain
 static a2020_path_param path_ct_VPOFF_gain_param[] = 
 {
-    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0009 }, //Primary MIC
-    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x01F0 }, //Secondary MIC
-    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x0209 }, //Tx
+    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x000A }, //Primary MIC 12
+ //   { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0104 }, //Secondary MIC
+    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x02F9 }, //Tx
     { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x03F8 }, //Far End(Rx)
-    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x00F8 }, //Rx
+    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x00F8 }, //Rx without extra 00f8
     { 0xFFFF, 0xFFFF },
 };
 
@@ -641,11 +641,11 @@ static a2020_path_param path_ct_1MIC_VPOFF_gain_param[] =
 //FT Digital Gain
 static a2020_path_param path_ft_gain_param[] = 
 {
-    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0007},
-    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0107 },
-    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x0203},
-    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x03FC },
-    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x0100 },
+    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0007}, //ADC0
+    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0107 }, //ADC1
+    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x0203}, //PCM A LEFT TX
+    { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x03FC }, //PCM A LEFT RX
+    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x0100 }, //DAC1 ?
     { 0xFFFF, 0xFFFF },
 };
 
