@@ -163,6 +163,19 @@ static struct samsung_spi_data gamma_sequence_80[] = {
 	{ .addr = 0xFA, .len = 1, .data = { 0x03 } },
 };
 
+static struct samsung_spi_data gamma_sequence_60[] = {
+	{ .addr = 0xfa, .len = 22, .data = { 0x02, 0x18, 0x08, 0x24, 0x48, 0x26,
+	 0x17, 0xB6, 0xBD, 0xA9, 0xB6, 0xBF, 0xAD, 0xCD, 0xD3, 0xC5, 0x00, 0x62,
+	 0x00, 0x58, 0x00, 0x85 } },
+	{ .addr = 0xFA, .len = 1, .data = { 0x03 } },
+};
+static struct samsung_spi_data gamma_sequence_40[] = {
+	{ .addr = 0xfa, .len = 22, .data = { 0x02, 0x18, 0x08, 0x24, 0x50, 0x1E,
+	 0x17, 0xB7, 0xBF, 0xAB, 0xB8, 0xC1, 0xB0, 0xCF, 0xD4, 0xC7, 0x00, 0x59,
+	 0x00, 0x4F, 0x00, 0x78 } },
+	{ .addr = 0xFA, .len = 1, .data = { 0x03 } },
+};
+
 #if (1) // kkcho_temp
 static struct samsung_spi_data etc_sequence[] = {
 	{ .addr = 0xF6, .len = 3, .data = { 0x00, 0x8e, 0x07 } },
@@ -654,7 +667,7 @@ extern unsigned int sky_charging_status(void);
 #ifdef PANTECH_OLED_BL_CONTROL
 static void lcdc_samsung_oled_set_backlight(struct msm_fb_data_type *mfd)
 {
-	//pr_info("%s  bl_level = %d \n", __func__,mfd->bl_level);
+	pr_info("%s  bl_level = %d \n", __func__,mfd->bl_level);
 
 	if(mfd->bl_level > 0 &&  old_bl_level == 0)
 	{	
@@ -664,58 +677,66 @@ static void lcdc_samsung_oled_set_backlight(struct msm_fb_data_type *mfd)
 	}
 	
 	switch (mfd->bl_level) {
-	case 12:
+	case 14:
 		samsung_serigo_list(gamma_sequence_300,
 			sizeof(gamma_sequence_300)/sizeof(*gamma_sequence_300));
 		break;
-	case 11:
+	case 13:
 		samsung_serigo_list(gamma_sequence_280,
 			sizeof(gamma_sequence_280)/sizeof(*gamma_sequence_280));
 		break;
-	case 10:
+	case 12:
 			
 		samsung_serigo_list(gamma_sequence_260,
 			sizeof(gamma_sequence_260)/sizeof(*gamma_sequence_260));
 		break;
 
-	case 9:
+	case 11:
 		samsung_serigo_list(gamma_sequence_240,
 			sizeof(gamma_sequence_240)/sizeof(*gamma_sequence_240));
 		break;
-	case 8:
+	case 10:
 		samsung_serigo_list(gamma_sequence_220,
 			sizeof(gamma_sequence_220)/sizeof(*gamma_sequence_220));
 		break;
-	case 7:			
+	case 9:			
 		samsung_serigo_list(gamma_sequence_200,
 			sizeof(gamma_sequence_200)/sizeof(*gamma_sequence_200));
 		break;
 
-	case 6:
+	case 8:
 		samsung_serigo_list(gamma_sequence_180,
 			sizeof(gamma_sequence_180)/sizeof(*gamma_sequence_180));
 		break;
-	case 5:
+	case 7:
 		samsung_serigo_list(gamma_sequence_160,
 			sizeof(gamma_sequence_160)/sizeof(*gamma_sequence_160));
 		break;
-	case 4:		
+	case 6:		
 		samsung_serigo_list(gamma_sequence_140,
 			sizeof(gamma_sequence_140)/sizeof(*gamma_sequence_140));
 		break;		
-	case 3:
+	case 5:
 	default:
 		samsung_serigo_list(gamma_sequence_120,
 			sizeof(gamma_sequence_120)/sizeof(*gamma_sequence_120));
 		break;
-	case 2:
+	case 4:
 		samsung_serigo_list(gamma_sequence_100,
 			sizeof(gamma_sequence_100)/sizeof(*gamma_sequence_100));
 		break;
-	case 1:			
+	case 3:			
 		samsung_serigo_list(gamma_sequence_80,
 			sizeof(gamma_sequence_80)/sizeof(*gamma_sequence_80));
 		break;
+	case 2:			
+		samsung_serigo_list(gamma_sequence_60,
+			sizeof(gamma_sequence_60)/sizeof(*gamma_sequence_60));
+		break;
+	case 1:			
+		samsung_serigo_list(gamma_sequence_40,
+			sizeof(gamma_sequence_40)/sizeof(*gamma_sequence_40));
+		break;		
 
 #ifdef CONFIG_F_SKYDISP_BEAM_ON_BUG_FIX
 	case 0:
@@ -801,7 +822,7 @@ static int __devinit samsung_probe(struct platform_device *pdev)
 	pinfo->fb_num = 2;
 	pinfo->clk_rate = 24000000; /* Max 27.77MHz */
 #ifdef PANTECH_OLED_BL_CONTROL	
-	pinfo->bl_max = 6; //12 -> 6  for power saving
+	pinfo->bl_max = 10; //12 -> 6  for power saving
 #else
 	pinfo->bl_max = 15;
 #endif
