@@ -32,7 +32,7 @@ static struct i2c_client *audience_a2020_i2c_client = NULL;
 
 #define CONFIG_AUDIENCE_A2020_0627    // jmlee        
 
-#define CONFIG_AUDIENCE_DEBUG_PRINTK // jmlee 20110823
+//#define CONFIG_AUDIENCE_DEBUG_PRINTK // jmlee 20110823
 
 #ifndef byte // jmlee
 #define byte u8
@@ -123,7 +123,6 @@ static const u8 a2020_firmware_image[] =
  *
  */
 static struct proc_dir_entry* A2020_proc;
-static char procfs_buffer[PROCFS_MAX_SIZE];
 static unsigned long procfs_buffer_size = 0;
 
 // ct gain 
@@ -732,7 +731,7 @@ int procfile_read(char *buffer,
 	      off_t offset, int buffer_length, int *eof, void *data)
 {
 	int ret;
-	char temp_buff[1024];
+	char temp_buff[PROCFS_MAX_SIZE];
 	printk(KERN_INFO "procfile_read (/proc/%s) called\n", PROCFS_NAME);
 	
 	if (offset > 0) {
@@ -751,7 +750,7 @@ int procfile_write(struct file *file, const char *buffer, unsigned long count,
 		   void *data)
 {
 	
-	char temp_buff[512];
+	char temp_buff[PROCFS_MAX_SIZE];
 	int level=0, a2020_path=0;
 	procfs_buffer_size = count;
 	if (procfs_buffer_size > PROCFS_MAX_SIZE ) {
