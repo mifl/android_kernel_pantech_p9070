@@ -24,6 +24,7 @@
 
 #include "snd_presto_sub_fab2200.h"
 #include <linux/i2c-gpio.h>
+#include <linux/proc_fs.h>	/* Necessary because we use the proc fs */
 
 static struct i2c_client *audience_a2020_i2c_client = NULL;
 
@@ -31,11 +32,14 @@ static struct i2c_client *audience_a2020_i2c_client = NULL;
 
 #define CONFIG_AUDIENCE_A2020_0627    // jmlee        
 
-#define CONFIG_AUDIENCE_DEBUG_PRINTK // jmlee 20110823
+//#define CONFIG_AUDIENCE_DEBUG_PRINTK // jmlee 20110823
 
 #ifndef byte // jmlee
 #define byte u8
 #endif
+
+#define PROCFS_MAX_SIZE		512
+#define PROCFS_NAME 		"a2020_gain"
 
 // A2020_CMD_BOOTLOAD_INITIATE is needed when reinitialize the system without resetting.
 /* === not used === */
@@ -113,6 +117,23 @@ static const u8 a2020_firmware_image[] =
 };
 
 #endif
+
+/**
+ * This structure hold information about the /proc file
+ *
+ */
+static struct proc_dir_entry* A2020_proc;
+static unsigned long procfs_buffer_size = 0;
+
+// ct gain 
+uint16_t ct_DAC1_cmd = 0x00F8;
+int ct_DAC1_path = 0;
+int ct_DAC1_gain = 242;  //F8 -14db
+//int ct_ACD1_gain =  10;  // A +10db
+//int ct_ADC2_gain =   4;  // 4 +4db
+
+
+
 int bBootSequence = 0;
 int bVPonoff = 0;
 a2020_talk_mode curr_talk_mode = MAX_TALK;
@@ -598,7 +619,7 @@ static a2020_path_param path_ct_gain_param[] =
     { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x0104 }, //0x801B:SetDigitalInputGain, 0x01:ADC1, 0x07:(6 dB)
     { A2020_CMD_SET_DIGI_INPUT_GAIN, 0x03F8 }, //0x801B:SetDigitalInputGain, 0x03:PCM-A left, 0xF2:(-8 dB)
     { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x02F9 }, //0x8015:SetDigitalOutputGain, 0x02:PCM-A left,  0x04:(9 dB) f4
-    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x00F8 }, //0x8015:SetDigitalOutputGain, 0x00:DAC0, 0x05:(-8 dB)  without extra 00f8
+    { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x00F8 }, //0x8015:SetDigitalOutputGain, 0x00:DAC0, 0x05:(-8 dB) 
     //{ A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x01fe }, 
     { 0xFFFF, 0xFFFF },
 };
@@ -704,6 +725,55 @@ static a2020_path_param path_call_MIC_gain_param[] =
     { A2020_CMD_SET_DIGI_OUTPUT_GAIN, 0x0100 }, //Rx
     { 0xFFFF, 0xFFFF },
 };
+//proc fs read
+int procfile_read(char *buffer,
+	      char **buffer_location,
+	      off_t offset, int buffer_length, int *eof, void *data)
+{
+	int ret;
+	char temp_buff[PROCFS_MAX_SIZE];
+	printk(KERN_INFO "procfile_read (/proc/%s) called\n", PROCFS_NAME);
+	
+	if (offset > 0) {
+		ret  = 0;
+	} else {
+		sprintf(temp_buff, "CT/CT_VPOFF DAC1 GAIN (%02x): %02x \n", ct_DAC1_path, ct_DAC1_gain);
+		strcat(buffer, temp_buff);
+		ret = strlen(buffer);
+	}
+
+	return ret;
+}
+
+//proc fs write
+int procfile_write(struct file *file, const char *buffer, unsigned long count,
+		   void *data)
+{
+	
+	char temp_buff[PROCFS_MAX_SIZE];
+	int level=0, a2020_path=0;
+	procfs_buffer_size = count;
+	if (procfs_buffer_size > PROCFS_MAX_SIZE ) {
+		procfs_buffer_size = PROCFS_MAX_SIZE;
+	}
+	
+	if ( copy_from_user(temp_buff, buffer, procfs_buffer_size) ) {
+		return -EFAULT;
+	}
+	sscanf(temp_buff, "%d %d", &a2020_path, &level);
+	
+	ct_DAC1_path = 0;
+	ct_DAC1_gain = level; 
+
+	printk( "CT/CT_VPOFF level = %02x A2020_path = %02x /n",ct_DAC1_gain, ct_DAC1_path);
+	printk ("before ct_DAC1_cmd = %04x /n", ct_DAC1_cmd);
+	ct_DAC1_cmd = (uint16_t)ct_DAC1_path << 8 |
+				  (uint16_t)ct_DAC1_gain;
+	printk ("after ct_DAC1_cmd = %04x /n", ct_DAC1_cmd);
+	procfs_buffer_size=strlen(temp_buff);
+	return procfs_buffer_size;
+}
+
 
 void A2020_msgCB_Chip_AckDataFlush(void)
 {
@@ -2190,7 +2260,7 @@ int aud_config_path_gain_cmd_to_2020(a2020_talk_mode talk_mode)
     byte count = 0;
     byte index = 0;
     u16 size = 0;
-
+    
     if(a2020_mode != A2020_ACTIVE_MODE)
         return 0;
 
@@ -2307,11 +2377,23 @@ int aud_config_path_gain_cmd_to_2020(a2020_talk_mode talk_mode)
                 break;
         }
 
-        if(talk_mode == CLOSE_TALK)
+        if(talk_mode == CLOSE_TALK) {
+			if ((path_ct_gain_param[index].cmd == A2020_CMD_SET_DIGI_OUTPUT_GAIN ) && (path_ct_gain_param[index].value == 0x00F8)) {
+			printk("DEFAULT CMD+VALUE %04x  %04x \n",path_ct_gain_param[index].cmd, path_ct_gain_param[index].value);
+			printk("CURRENT CMD+VALUE %04x  %04x \n",path_ct_gain_param[index].cmd, ct_DAC1_cmd);
+			ret_val = A2020_msg(path_ct_gain_param[index].cmd, ct_DAC1_cmd, 4);
+			} else {
             ret_val = A2020_msg(path_ct_gain_param[index].cmd, path_ct_gain_param[index].value, 4);
-        else if(talk_mode == CLOSE_VPOFF_TALK)
+			}
+        } else if(talk_mode == CLOSE_VPOFF_TALK) {
+			if ((path_ct_VPOFF_gain_param[index].cmd == A2020_CMD_SET_DIGI_OUTPUT_GAIN) && (path_ct_VPOFF_gain_param[index].value == 0x00F8)) {
+            printk("DEFAULT CMD+VALUE %04x  %04x \n",path_ct_VPOFF_gain_param[index].cmd, path_ct_VPOFF_gain_param[index].value);
+			printk("CURRENT CMD+VALUE %04x  %04x \n",path_ct_VPOFF_gain_param[index].cmd, ct_DAC1_cmd);
+			ret_val = A2020_msg(path_ct_VPOFF_gain_param[index].cmd, ct_DAC1_cmd, 4);
+			} else {
             ret_val = A2020_msg(path_ct_VPOFF_gain_param[index].cmd, path_ct_VPOFF_gain_param[index].value, 4);
-        else if(talk_mode == CLOSE_1MIC_TALK)
+			}
+        } else if(talk_mode == CLOSE_1MIC_TALK)
             ret_val = A2020_msg(path_ct_1MIC_gain_param[index].cmd, path_ct_1MIC_gain_param[index].value, 4);
         else if(talk_mode == CLOSE_1MIC_VPOFF_TALK)
             ret_val = A2020_msg(path_ct_1MIC_VPOFF_gain_param[index].cmd, path_ct_1MIC_VPOFF_gain_param[index].value, 4);
@@ -2334,7 +2416,7 @@ int aud_config_path_gain_cmd_to_2020(a2020_talk_mode talk_mode)
 
         if(ret_val == 1)
         {
-            //printk( "[Snd_audience_a2020] A2020 Path Digital Gain Param Write OK !!!\n");		
+            printk( "[Snd_audience_a2020] A2020 Path Digital Gain Param Write OK !!!\n");		
             mdelay(1);
             index++;
 
@@ -3363,6 +3445,21 @@ void snd_audience_a2020_api_Init(void)
 	printk( "[Snd_audience_a2020] snd_audience_a2020_api_Init()\n");
 #endif
 	result = i2c_add_driver(&audience_a2020_driver);
+	A2020_proc = create_proc_entry(PROCFS_NAME, 0777, NULL);
+// proc fs init	
+	if (A2020_proc == NULL) {
+		remove_proc_entry(PROCFS_NAME, NULL);
+		printk(KERN_ALERT "Error: Could not initialize /proc/%s\n",
+			PROCFS_NAME);
+	}
+
+	A2020_proc->read_proc  = procfile_read;
+	A2020_proc->write_proc = procfile_write;
+	A2020_proc->mode 	  = S_IFREG | S_IRUGO;
+	A2020_proc->uid 	  = 0;
+	A2020_proc->gid 	  = 0;
+	printk(KERN_INFO "/proc/%s created\n", PROCFS_NAME);	
+
 	if(result){
 #ifdef CONFIG_AUDIENCE_DEBUG_PRINTK		
 	printk(KERN_ERR "[Snd_audience_a2020] snd_audience_a2020_api_Init  Fail\n");
@@ -3373,7 +3470,10 @@ void snd_audience_a2020_api_Init(void)
 void snd_audience_a2020_api_DeInit(void)
 {
 	//misc_deregister(&miscdev);
+	remove_proc_entry(PROCFS_NAME, NULL);
+	printk(KERN_INFO "/proc/%s removed\n", PROCFS_NAME);
 	i2c_del_driver(&audience_a2020_driver);
+	
 }
 
 
