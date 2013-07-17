@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -340,10 +340,15 @@ static void vid_dec_output_frame_done(struct video_client_ctx *client_ctx,
 				pmem_fd, kernel_vaddr, buffer_index,
 				&buff_handle);
 		if (ion_flag == CACHED && buff_handle) {
+			DBG("%s: Cache invalidate: vaddr (%p), "\
+				"size %u\n", __func__,
+				(void *)kernel_vaddr,
+				vcd_frame_data->alloc_len);
 			msm_ion_do_cache_op(client_ctx->user_ion_client,
 					buff_handle,
 					(unsigned long *) kernel_vaddr,
-					(unsigned long)vcd_frame_data->data_len,
+					(unsigned long)vcd_frame_data->\
+					alloc_len,
 					ION_IOC_INV_CACHES);
 		}
 	}
@@ -621,6 +626,26 @@ static u32 vid_dec_set_frame_resolution(struct video_client_ctx *client_ctx,
 
 	vcd_status = vcd_set_property(client_ctx->vcd_handle,
 				      &vcd_property_hdr, &frame_resolution);
+
+	if (vcd_status)
+		return false;
+	else
+		return true;
+}
+
+static u32 vid_dec_set_turbo_clk(struct video_client_ctx *client_ctx)
+{
+	struct vcd_property_hdr vcd_property_hdr;
+	u32 vcd_status = VCD_ERR_FAIL;
+	u32 dummy = 0;
+
+	if (!client_ctx)
+		return false;
+	vcd_property_hdr.prop_id = VCD_I_SET_TURBO_CLK;
+	vcd_property_hdr.sz = sizeof(struct vcd_property_frame_size);
+
+	vcd_status = vcd_set_property(client_ctx->vcd_handle,
+				      &vcd_property_hdr, &dummy);
 
 	if (vcd_status)
 		return false;
@@ -1672,6 +1697,11 @@ static long vid_dec_ioctl(struct file *file,
 			desc_buf = NULL;
 			return -EIO;
 		}
+		break;
+	}
+	case VDEC_IOCTL_SET_PERF_CLK:
+	{
+		vid_dec_set_turbo_clk(client_ctx);
 		break;
 	}
 	case VDEC_IOCTL_FILL_OUTPUT_BUFFER:

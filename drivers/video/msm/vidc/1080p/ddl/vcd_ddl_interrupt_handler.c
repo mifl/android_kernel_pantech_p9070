@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -183,6 +183,9 @@ static void parse_hdr_size_data(struct ddl_client_context *ddl,
 			&decoder->frame_size.height);
 		progressive = seq_hdr_info->dec_progressive;
 	}
+	decoder->yuv_size = decoder->frame_size.width *
+				decoder->frame_size.height;
+	decoder->yuv_size += decoder->yuv_size / 2;
 	decoder->min_dpb_num = seq_hdr_info->min_num_dpb;
 	vidc_sm_get_min_yc_dpb_sizes(
 		&ddl->shared_mem[ddl->command_channel],
@@ -1195,6 +1198,9 @@ static u32 ddl_decoder_output_done_callback(
 			decoder->frame_size =
 				 output_vcd_frm->dec_op_prop.frm_size;
 			decoder->client_frame_size = decoder->frame_size;
+			decoder->yuv_size = decoder->frame_size.width *
+						decoder->frame_size.height;
+			decoder->yuv_size += decoder->yuv_size / 2;
 			decoder->y_cb_cr_size =
 				ddl_get_yuv_buffer_size(&decoder->frame_size,
 					&decoder->buf_format,
@@ -1641,6 +1647,13 @@ static void ddl_handle_enc_frame_done(struct ddl_client_context *ddl)
 	output_frame->flags |= VCD_FRAME_FLAG_ENDOFFRAME;
 	(void)ddl_get_encoded_frame(output_frame,
 		encoder->codec.codec, encoder->enc_frame_info.enc_frame);
+	if (!IS_ERR_OR_NULL(output_frame->buff_ion_handle)) {
+		msm_ion_do_cache_op(ddl_context->video_ion_client,
+			output_frame->buff_ion_handle,
+			(unsigned long *) output_frame->virtual,
+			(unsigned long) output_frame->alloc_len,
+			ION_IOC_INV_CACHES);
+	}
 	ddl_process_encoder_metadata(ddl);
 	ddl_vidc_encode_dynamic_property(ddl, false);
 	ddl->input_frame.frm_trans_end = false;

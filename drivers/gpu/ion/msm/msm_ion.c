@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -136,9 +136,11 @@ static void allocate_co_memory(struct ion_platform_heap *heap,
 				}
 
 				cp_data->virt_addr = fmem_info->virt;
-				cp_data->secure_base = heap->base;
-				cp_data->secure_size =
+				if (!cp_data->secure_base) {
+					cp_data->secure_base = heap->base;
+					cp_data->secure_size =
 						heap->size + shared_heap->size;
+				}
 			} else if (!heap->base) {
 				ion_set_base_address(heap, shared_heap,
 					co_heap_data, cp_data);
@@ -241,6 +243,7 @@ static int msm_ion_probe(struct platform_device *pdev)
 		struct ion_platform_heap *heap_data = &pdata->heaps[i];
 		msm_ion_allocate(heap_data);
 
+		heap_data->has_outer_cache = pdata->has_outer_cache;
 		heaps[i] = ion_heap_create(heap_data);
 		if (IS_ERR_OR_NULL(heaps[i])) {
 			heaps[i] = 0;

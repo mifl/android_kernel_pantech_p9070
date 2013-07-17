@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -61,7 +61,8 @@
 static struct msm_watchdog_pdata msm_watchdog_pdata = {
 	.pet_time = 10000,
 	.bark_time = 11000,
-	.has_secure = true,
+	.has_secure = false,
+	.use_kernel_fiq = true,
 };
 
 struct platform_device msm9615_device_watchdog = {
@@ -411,8 +412,7 @@ static struct resource resources_nand[] = {
 };
 
 struct flash_platform_data msm_nand_data = {
-	.parts		= NULL,
-	.nr_parts	= 0,
+	.version = VERSION_2,
 };
 
 struct platform_device msm_device_nand = {
@@ -938,12 +938,6 @@ void __init msm9615_init_irq(void)
 	msm_mpm_irq_extn_init();
 	gic_init(0, GIC_PPI_START, MSM_QGIC_DIST_BASE,
 						(void *)MSM_QGIC_CPU_BASE);
-
-	/* Edge trigger PPIs except AVS_SVICINT and AVS_SVICINTSWDONE */
-	writel_relaxed(0xFFFFD7FF, MSM_QGIC_DIST_BASE + GIC_DIST_CONFIG + 4);
-
-	writel_relaxed(0x0000FFFF, MSM_QGIC_DIST_BASE + GIC_DIST_ENABLE_SET);
-	mb();
 }
 
 struct platform_device msm_bus_9615_sys_fabric = {

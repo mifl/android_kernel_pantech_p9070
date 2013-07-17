@@ -2,7 +2,7 @@
  *
  * MSM MDP Interface (used by framebuffer core)
  *
- * Copyright (c) 2007-2012, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2007-2012, The Linux Foundation. All rights reserved.
  * Copyright (C) 2007 Google Incorporated
  *
  * This software is licensed under the terms of the GNU General Public
@@ -50,7 +50,7 @@ static struct clk *mdp_pclk;
 static struct clk *mdp_lut_clk;
 int mdp_rev;
 
-static struct regulator *footswitch;
+static struct regulator *footswitch, *hdmi_pll_fs;
 static unsigned int mdp_footswitch_on;
 
 struct completion mdp_ppp_comp;
@@ -843,7 +843,11 @@ static int mdp_histogram_disable(struct mdp_hist_mgmt *mgmt)
 	MDP_OUTP(base + 0x0018, INTR_HIST_DONE | INTR_HIST_RESET_SEQ_DONE);
 	mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_OFF, FALSE);
 
-	complete(&mgmt->mdp_hist_comp);
+	if (mgmt->hist != NULL) {
+		mgmt->hist = NULL;
+		complete(&mgmt->mdp_hist_comp);
+	}
+
 	mdp_disable_irq(mgmt->irq_term);
 	return 0;
 }
@@ -910,6 +914,7 @@ int mdp_histogram_start(struct mdp_histogram_start_req *req)
 		goto error;
 	}
 
+	mutex_lock(&mgmt->mdp_do_hist_mutex);
 	mutex_lock(&mgmt->mdp_hist_mutex);
 	if (mgmt->mdp_is_hist_start == TRUE) {
 		pr_err("%s histogram already started\n", __func__);
@@ -921,7 +926,6 @@ int mdp_histogram_start(struct mdp_histogram_start_req *req)
 	mgmt->frame_cnt = req->frame_cnt;
 	mgmt->bit_mask = req->bit_mask;
 	mgmt->num_bins = req->num_bins;
-	mgmt->hist = NULL;
 
 	ret = mdp_histogram_enable(mgmt);
 
@@ -929,6 +933,7 @@ int mdp_histogram_start(struct mdp_histogram_start_req *req)
 
 error_lock:
 	mutex_unlock(&mgmt->mdp_hist_mutex);
+	mutex_unlock(&mgmt->mdp_do_hist_mutex);
 error:
 	return ret;
 }
@@ -945,6 +950,7 @@ int mdp_histogram_stop(struct fb_info *info, uint32_t block)
 		goto error;
 	}
 
+	mutex_lock(&mgmt->mdp_do_hist_mutex);
 	mutex_lock(&mgmt->mdp_hist_mutex);
 	if (mgmt->mdp_is_hist_start == FALSE) {
 		pr_err("%s histogram already stopped\n", __func__);
@@ -956,7 +962,10 @@ int mdp_histogram_stop(struct fb_info *info, uint32_t block)
 
 	if (!mfd->panel_power_on) {
 		mgmt->mdp_is_hist_data = FALSE;
-		complete(&mgmt->mdp_hist_comp);
+		if (mgmt->hist != NULL) {
+			mgmt->hist = NULL;
+			complete(&mgmt->mdp_hist_comp);
+		}
 		ret = -EINVAL;
 		goto error_lock;
 	}
@@ -965,10 +974,12 @@ int mdp_histogram_stop(struct fb_info *info, uint32_t block)
 
 	mutex_unlock(&mgmt->mdp_hist_mutex);
 	cancel_work_sync(&mgmt->mdp_histogram_worker);
+	mutex_unlock(&mgmt->mdp_do_hist_mutex);
 	return ret;
 
 error_lock:
 	mutex_unlock(&mgmt->mdp_hist_mutex);
+	mutex_unlock(&mgmt->mdp_do_hist_mutex);
 error:
 	return ret;
 }
@@ -1090,28 +1101,39 @@ static void mdp_hist_read_work(struct work_struct *data)
 		goto error;
 	}
 
-	switch (mgmt->block) {
-	case MDP_BLOCK_DMA_P:
-	case MDP_BLOCK_DMA_S:
-		ret = _mdp_histogram_read_dma_data(mgmt);
-		break;
-	case MDP_BLOCK_VG_1:
-	case MDP_BLOCK_VG_2:
-		ret = _mdp_histogram_read_vg_data(mgmt);
-		break;
-	default:
-		pr_err("%s, invalid MDP block = %d\n", __func__, mgmt->block);
+	if (mgmt->hist == NULL) {
+		if ((mgmt->mdp_is_hist_init == TRUE) &&
+			((!completion_done(&mgmt->mdp_hist_comp)) &&
+			waitqueue_active(&mgmt->mdp_hist_comp.wait)))
+			pr_err("mgmt->hist invalid NULL\n");
 		ret = -EINVAL;
-		goto error;
 	}
 
+	if (!ret) {
+		switch (mgmt->block) {
+		case MDP_BLOCK_DMA_P:
+		case MDP_BLOCK_DMA_S:
+			ret = _mdp_histogram_read_dma_data(mgmt);
+			break;
+		case MDP_BLOCK_VG_1:
+		case MDP_BLOCK_VG_2:
+			ret = _mdp_histogram_read_vg_data(mgmt);
+			break;
+		default:
+			pr_err("%s, invalid MDP block = %d\n", __func__,
+								mgmt->block);
+			ret = -EINVAL;
+			goto error;
+		}
+	}
 	/*
 	 * if read was triggered by an underrun or failed copying,
 	 * don't wake up readers
 	 */
 	if (!ret && mgmt->mdp_is_hist_valid && mgmt->mdp_is_hist_init) {
 		mgmt->hist = NULL;
-		complete(&mgmt->mdp_hist_comp);
+		if (waitqueue_active(&mgmt->mdp_hist_comp.wait))
+			complete(&mgmt->mdp_hist_comp);
 	}
 
 	if (mgmt->mdp_is_hist_valid == FALSE)
@@ -1164,11 +1186,13 @@ err:
 	return ret;
 }
 
+#define MDP_HISTOGRAM_TIMEOUT_MS	84 /*5 Frames*/
 static int mdp_do_histogram(struct fb_info *info,
 					struct mdp_histogram_data *hist)
 {
 	struct mdp_hist_mgmt *mgmt = NULL;
 	int ret = 0;
+	unsigned long timeout = (MDP_HISTOGRAM_TIMEOUT_MS * HZ) / 1000;
 
 	ret = mdp_histogram_block2mgmt(hist->block, &mgmt);
 	if (ret) {
@@ -1210,12 +1234,21 @@ static int mdp_do_histogram(struct fb_info *info,
 		ret = -EPERM;
 		goto error_lock;
 	}
+	INIT_COMPLETION(mgmt->mdp_hist_comp);
 	mgmt->hist = hist;
 	mutex_unlock(&mgmt->mdp_hist_mutex);
 
-	if (wait_for_completion_killable(&mgmt->mdp_hist_comp)) {
-		pr_err("%s(): histogram bin collection killed", __func__);
-		ret = -EINVAL;
+	ret = wait_for_completion_killable_timeout(&mgmt->mdp_hist_comp,
+								timeout);
+	if (ret <= 0) {
+		if (!ret) {
+			mgmt->hist = NULL;
+			ret = -ETIMEDOUT;
+			pr_debug("%s: bin collection timedout", __func__);
+		} else {
+			mgmt->hist = NULL;
+			pr_debug("%s: bin collection interrupted", __func__);
+		}
 		goto error;
 	}
 
@@ -1590,15 +1623,7 @@ void mdp_histogram_handle_isr(struct mdp_hist_mgmt *mgmt)
 		__mdp_histogram_kickoff(mgmt);
 
 	if (isr & INTR_HIST_DONE) {
-		if (waitqueue_active(&mgmt->mdp_hist_comp.wait)) {
-			if (!queue_work(mdp_hist_wq,
-						&mgmt->mdp_histogram_worker)) {
-				pr_err("%s %d- can't queue hist_read\n",
-							 __func__, mgmt->block);
-			}
-		} else {
-			__mdp_histogram_reset(mgmt);
-		}
+		queue_work(mdp_hist_wq, &mgmt->mdp_histogram_worker);
 	}
 }
 
@@ -2075,7 +2100,8 @@ unsigned long mdp_perf_level2clk_rate(uint32 perf_level)
 	return clk_rate;
 }
 
-static int mdp_irq_clk_setup(char cont_splashScreen)
+static int mdp_irq_clk_setup(struct platform_device *pdev,
+		char cont_splashScreen)
 {
 	int ret;
 
@@ -2090,12 +2116,20 @@ static int mdp_irq_clk_setup(char cont_splashScreen)
 	}
 	disable_irq(mdp_irq);
 
+	hdmi_pll_fs = regulator_get(&pdev->dev, "hdmi_pll_fs");
+	if (IS_ERR(hdmi_pll_fs))
+		hdmi_pll_fs = NULL;
+
 	footswitch = regulator_get(NULL, "fs_mdp");
 	if (IS_ERR(footswitch))
 		footswitch = NULL;
 	else {
+		if (hdmi_pll_fs)
+			regulator_enable(hdmi_pll_fs);
 		regulator_enable(footswitch);
 		mdp_footswitch_on = 1;
+		if (hdmi_pll_fs)
+			regulator_disable(hdmi_pll_fs);
 	}
 
 	mdp_clk = clk_get(NULL, "mdp_clk");
@@ -2182,7 +2216,7 @@ static int mdp_probe(struct platform_device *pdev)
 
 		mdp_rev = mdp_pdata->mdp_rev;
 
-		rc = mdp_irq_clk_setup(mdp_pdata->cont_splash_enabled);
+		rc = mdp_irq_clk_setup(pdev, mdp_pdata->cont_splash_enabled);
 
 		if (rc)
 			return rc;
@@ -2572,6 +2606,9 @@ void mdp_footswitch_ctrl(boolean on)
 		return;
 	}
 
+	if (hdmi_pll_fs)
+		regulator_enable(hdmi_pll_fs);
+
 	if (on && !mdp_footswitch_on) {
 		pr_debug("Enable MDP FS\n");
 		regulator_enable(footswitch);
@@ -2581,6 +2618,9 @@ void mdp_footswitch_ctrl(boolean on)
 		regulator_disable(footswitch);
 		mdp_footswitch_on = 0;
 	}
+
+	if (hdmi_pll_fs)
+		regulator_disable(hdmi_pll_fs);
 
 	mutex_unlock(&mdp_suspend_mutex);
 }

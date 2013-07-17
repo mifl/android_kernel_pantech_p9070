@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -53,7 +53,7 @@ VREG_CONSUMERS(L6) = {
 };
 VREG_CONSUMERS(L7) = {
 	REGULATOR_SUPPLY("8921_l7",		NULL),
-	REGULATOR_SUPPLY("sdc_vddp",		"msm_sdcc.3"),
+	REGULATOR_SUPPLY("sdc_vdd_io",		"msm_sdcc.3"),
 };
 VREG_CONSUMERS(L8) = {
 	REGULATOR_SUPPLY("8921_l8",		NULL),
@@ -113,6 +113,7 @@ VREG_CONSUMERS(L23) = {
 	REGULATOR_SUPPLY("8921_l23",		NULL),
 	REGULATOR_SUPPLY("dsi_vddio",		"mipi_dsi.1"),
 	REGULATOR_SUPPLY("hdmi_avdd",		"hdmi_msm.0"),
+	REGULATOR_SUPPLY("hdmi_pll_fs",		"mdp.0"),
 	REGULATOR_SUPPLY("pll_vdd",		"pil_riva"),
 	REGULATOR_SUPPLY("pll_vdd",		"pil_qdsp6v4.1"),
 	REGULATOR_SUPPLY("pll_vdd",		"pil_qdsp6v4.2"),
@@ -159,9 +160,9 @@ VREG_CONSUMERS(S3) = {
 };
 VREG_CONSUMERS(S4) = {
 	REGULATOR_SUPPLY("8921_s4",		NULL),
-	REGULATOR_SUPPLY("sdc_vccq",		"msm_sdcc.1"),
+	REGULATOR_SUPPLY("sdc_vdd_io",		"msm_sdcc.1"),
 	REGULATOR_SUPPLY("sdc_vdd",		"msm_sdcc.2"),
-	REGULATOR_SUPPLY("sdc_vddp",            "msm_sdcc.4"),
+	REGULATOR_SUPPLY("sdc_vdd_io",            "msm_sdcc.4"),
 	REGULATOR_SUPPLY("riva_vddpx",		"wcnss_wlan.0"),
 	REGULATOR_SUPPLY("hdmi_vcc",		"hdmi_msm.0"),
 	REGULATOR_SUPPLY("VDDIO_CDC",		"tabla-slim"),
