@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009-2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -209,6 +209,7 @@ static enum msm_cpu cpu_of_id[] = {
 	[101] = MSM_CPU_7X27AA,
 	[102] = MSM_CPU_7X27AA,
 	[103] = MSM_CPU_7X27AA,
+	[136] = MSM_CPU_7X27AA,
 
 	/* 9x15 ID */
 	[104] = MSM_CPU_9615,
@@ -245,6 +246,7 @@ static enum msm_cpu cpu_of_id[] = {
 	[131] = MSM_CPU_7X25AB,
 	[132] = MSM_CPU_7X25AB,
 	[133] = MSM_CPU_7X25AB,
+	[135] = MSM_CPU_7X25AB,
 
 	/* Uninitialized IDs are not known to run Linux.
 	   MSM_CPU_UNKNOWN is set to 0 to ensure these IDs are

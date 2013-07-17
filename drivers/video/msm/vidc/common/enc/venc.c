@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -252,6 +252,8 @@ static void vid_enc_output_frame_done(struct video_client_ctx *client_ctx,
 		/* Timestamp pass-through from input frame */
 		venc_msg->venc_msg_info.buf.timestamp =
 			vcd_frame_data->time_stamp;
+		venc_msg->venc_msg_info.buf.sz =
+			vcd_frame_data->alloc_len;
 
 		/* Decoded picture width and height */
 		venc_msg->venc_msg_info.msgdata_size =
@@ -269,7 +271,7 @@ static void vid_enc_output_frame_done(struct video_client_ctx *client_ctx,
 			msm_ion_do_cache_op(client_ctx->user_ion_client,
 				buff_handle,
 				(unsigned long *) kernel_vaddr,
-				(unsigned long)venc_msg->venc_msg_info.buf.len,
+				(unsigned long)venc_msg->venc_msg_info.buf.sz,
 				ION_IOC_CLEAN_INV_CACHES);
 		}
 	}
@@ -1604,6 +1606,29 @@ static long vid_enc_ioctl(struct file *file,
 		}
 		if (!result) {
 			ERR("setting VEN_IOCTL_(G)SET_LIVE_MODE failed\n");
+			return -EIO;
+		}
+		break;
+	}
+	case VEN_IOCTL_SET_H263_PLUSPTYPE:
+	{
+		struct vcd_property_hdr vcd_property_hdr;
+		struct venc_plusptype plusptype;
+		u32 enable;
+		u32 vcd_status = VCD_ERR_FAIL;
+		if (copy_from_user(&venc_msg, arg, sizeof(venc_msg)))
+			return -EFAULT;
+		if (copy_from_user(&plusptype, venc_msg.in,
+			sizeof(plusptype)))
+			return -EFAULT;
+		vcd_property_hdr.prop_id = VCD_I_H263_PLUSPTYPE;
+		vcd_property_hdr.sz = sizeof(u32);
+		enable = plusptype.plusptype_enable;
+		DBG("VEN_IOCTL_SET PLUSPTYPE = %d\n", enable);
+		vcd_status = vcd_set_property(client_ctx->vcd_handle,
+						&vcd_property_hdr, &enable);
+		if (vcd_status) {
+			pr_err(" Setting plusptype failed");
 			return -EIO;
 		}
 		break;

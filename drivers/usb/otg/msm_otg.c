@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -714,10 +714,14 @@ static int msm_otg_suspend(struct msm_otg *motg)
 	clk_disable(motg->core_clk);
 
 	/* usb phy no more require TCXO clock, hence vote for TCXO disable */
-	ret = msm_xo_mode_vote(motg->xo_handle, MSM_XO_MODE_OFF);
-	if (ret)
-		dev_err(otg->dev, "%s failed to devote for "
-			"TCXO D0 buffer%d\n", __func__, ret);
+	if (!host_bus_suspend) {
+		ret = msm_xo_mode_vote(motg->xo_handle, MSM_XO_MODE_OFF);
+		if (ret)
+			dev_err(otg->dev, "%s failed to devote for "
+				"TCXO D0 buffer%d\n", __func__, ret);
+		else
+			motg->lpm_flags |= XO_SHUTDOWN;
+	}
 
 	if (motg->caps & ALLOW_PHY_POWER_COLLAPSE &&
 			!host_bus_suspend && !dcp) {
@@ -762,10 +766,13 @@ static int msm_otg_resume(struct msm_otg *motg)
 	wake_lock(&motg->wlock);
 
 	/* Vote for TCXO when waking up the phy */
-	ret = msm_xo_mode_vote(motg->xo_handle, MSM_XO_MODE_ON);
-	if (ret)
-		dev_err(otg->dev, "%s failed to vote for "
-			"TCXO D0 buffer%d\n", __func__, ret);
+	if (motg->lpm_flags & XO_SHUTDOWN) {
+		ret = msm_xo_mode_vote(motg->xo_handle, MSM_XO_MODE_ON);
+		if (ret)
+			dev_err(otg->dev, "%s failed to vote for "
+				"TCXO D0 buffer%d\n", __func__, ret);
+		motg->lpm_flags &= ~XO_SHUTDOWN;
+	}
 
 	clk_enable(motg->core_clk);
 
@@ -841,6 +848,21 @@ skip_phy_resume:
 	return 0;
 }
 #endif
+
+static int msm_otg_notify_host_mode(struct msm_otg *motg, bool host_mode)
+{
+	if (!psy)
+		goto psy_not_supported;
+
+	if (host_mode)
+		power_supply_set_scope(psy, POWER_SUPPLY_SCOPE_SYSTEM);
+	else
+		power_supply_set_scope(psy, POWER_SUPPLY_SCOPE_DEVICE);
+
+psy_not_supported:
+	dev_dbg(motg->otg.dev, "Power Supply doesn't support USB charger\n");
+	return -ENXIO;
+}
 
 static int msm_otg_notify_chg_type(struct msm_otg *motg)
 {
@@ -1057,7 +1079,7 @@ static void msm_hsusb_vbus_power(struct msm_otg *motg, bool on)
 	 * current from the source.
 	 */
 	if (on) {
-		pm8921_disable_source_current(on);
+		msm_otg_notify_host_mode(motg, on);
 		ret = regulator_enable(vbus_otg);
 		if (ret) {
 			pr_err("unable to enable vbus_otg\n");
@@ -1070,7 +1092,7 @@ static void msm_hsusb_vbus_power(struct msm_otg *motg, bool on)
 			pr_err("unable to disable vbus_otg\n");
 			return;
 		}
-		pm8921_disable_source_current(on);
+		msm_otg_notify_host_mode(motg, on);
 		vbus_is_on = false;
 	}
 }
@@ -1783,10 +1805,13 @@ static void msm_otg_init_sm(struct msm_otg *motg)
 				clear_bit(B_SESS_VLD, &motg->inputs);
 		} else if (pdata->otg_control == OTG_PMIC_CONTROL) {
 			if (pdata->pmic_id_irq) {
+				unsigned long flags;
+				local_irq_save(flags);
 				if (irq_read_line(pdata->pmic_id_irq))
 					set_bit(ID, &motg->inputs);
 				else
 					clear_bit(ID, &motg->inputs);
+				local_irq_restore(flags);
 			}
 			/*
 			 * VBUS initial state is reported after PMIC
@@ -2034,6 +2059,10 @@ static void msm_otg_set_vbus_state(int online)
 	static bool init;
 	struct msm_otg *motg = the_msm_otg;
 
+	/* Ignore received BSV interrupts, if ID pin is GND */
+	if (!test_bit(ID, &motg->inputs))
+		return;
+
 	if (online) {
 		pr_debug("PMIC: BSV set\n");
 		set_bit(B_SESS_VLD, &motg->inputs);
@@ -2052,23 +2081,43 @@ static void msm_otg_set_vbus_state(int online)
 	schedule_work(&motg->sm_work);
 }
 
+static void msm_pmic_id_status_w(struct work_struct *w)
+{
+	struct msm_otg *motg = container_of(w, struct msm_otg,
+						pmic_id_status_work.work);
+	int work = 0;
+	unsigned long flags;
+
+	local_irq_save(flags);
+	if (irq_read_line(motg->pdata->pmic_id_irq)) {
+		if (!test_and_set_bit(ID, &motg->inputs)) {
+			pr_debug("PMIC: ID set\n");
+			work = 1;
+		}
+	} else {
+		if (test_and_clear_bit(ID, &motg->inputs)) {
+			pr_debug("PMIC: ID clear\n");
+			work = 1;
+		}
+	}
+
+
+	if (work && (motg->otg.state != OTG_STATE_UNDEFINED))
+		schedule_work(&motg->sm_work);
+
+	local_irq_restore(flags);
+
+}
+
+#define MSM_PMIC_ID_STATUS_DELAY	5 /* 5msec */
 static irqreturn_t msm_pmic_id_irq(int irq, void *data)
 {
 	struct msm_otg *motg = data;
 
-	if (aca_id_turned_on)
-		return IRQ_HANDLED;
-
-	if (irq_read_line(motg->pdata->pmic_id_irq)) {
-		pr_debug("PMIC: ID set\n");
-		set_bit(ID, &motg->inputs);
-	} else {
-		pr_debug("PMIC: ID clear\n");
-		clear_bit(ID, &motg->inputs);
-	}
-
-	if (motg->otg.state != OTG_STATE_UNDEFINED)
-		schedule_work(&motg->sm_work);
+	if (!aca_id_turned_on)
+		/*schedule delayed work for 5msec for ID line state to settle*/
+		schedule_delayed_work(&motg->pmic_id_status_work,
+			msecs_to_jiffies(MSM_PMIC_ID_STATUS_DELAY));
 
 	return IRQ_HANDLED;
 }
@@ -2658,6 +2707,7 @@ static int __init msm_otg_probe(struct platform_device *pdev)
 	wake_lock_init(&motg->wlock, WAKE_LOCK_SUSPEND, "msm_otg");
 	INIT_WORK(&motg->sm_work, msm_otg_sm_work);
 	INIT_DELAYED_WORK(&motg->chg_work, msm_chg_detect_work);
+	INIT_DELAYED_WORK(&motg->pmic_id_status_work, msm_pmic_id_status_w);
 	setup_timer(&motg->id_timer, msm_otg_id_timer_func,
 				(unsigned long) motg);
 	ret = request_irq(motg->irq, msm_otg_irq, IRQF_SHARED,
@@ -2791,6 +2841,7 @@ static int __devexit msm_otg_remove(struct platform_device *pdev)
 		pm8921_charger_unregister_vbus_sn(0);
 	msm_otg_debugfs_cleanup();
 	cancel_delayed_work_sync(&motg->chg_work);
+	cancel_delayed_work_sync(&motg->pmic_id_status_work);
 	cancel_work_sync(&motg->sm_work);
 
 	pm_runtime_resume(&pdev->dev);

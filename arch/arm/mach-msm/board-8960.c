@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -50,6 +50,7 @@
 #include <asm/mach/mmc.h>
 
 #include <mach/board.h>
+#include <mach/msm_tspp.h>
 #include <mach/msm_iomap.h>
 #include <mach/msm_spi.h>
 #ifdef CONFIG_USB_MSM_OTG_72K
@@ -161,10 +162,11 @@ struct sx150x_platform_data msm8960_sx150x_data[] = {
 #define MSM_LIQUID_ION_SF_SIZE MSM_LIQUID_PMEM_SIZE
 #define MSM_HDMI_PRIM_ION_SF_SIZE MSM_HDMI_PRIM_PMEM_SIZE
 
-#define MSM8960_FIXED_AREA_START 0xb0000000
-#define MAX_FIXED_AREA_SIZE	0x10000000
 #define MSM_MM_FW_SIZE		0x200000
-#define MSM8960_FW_START	(MSM8960_FIXED_AREA_START - MSM_MM_FW_SIZE)
+#define MSM8960_FIXED_AREA_START (0xb0000000 - MSM_MM_FW_SIZE)
+#define MAX_FIXED_AREA_SIZE	0x10000000
+#define MSM8960_FW_START	(MSM8960_FIXED_AREA_START)
+#define HOLE_SIZE		0x100000
 
 static unsigned msm_ion_sf_size = MSM_ION_SF_SIZE;
 #else
@@ -361,7 +363,7 @@ static int msm8960_paddr_to_memtype(unsigned int paddr)
 	return MEMTYPE_EBI1;
 }
 
-#define FMEM_ENABLED 1
+#define FMEM_ENABLED 0
 
 #ifdef CONFIG_ION_MSM
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
@@ -655,14 +657,14 @@ static void __init reserve_ion_memory(void)
 		return;
 
 	if (fmem_pdata.size) {
-		fmem_pdata.reserved_size_low = fixed_low_size;
+		fmem_pdata.reserved_size_low = fixed_low_size + HOLE_SIZE;
 		fmem_pdata.reserved_size_high = fixed_high_size;
 	}
 
-	msm8960_reserve_fixed_area(fixed_size + MSM_MM_FW_SIZE);
+	msm8960_reserve_fixed_area(fixed_size + HOLE_SIZE);
 
 	fixed_low_start = MSM8960_FIXED_AREA_START;
-	fixed_middle_start = fixed_low_start + fixed_low_size;
+	fixed_middle_start = fixed_low_start + fixed_low_size + HOLE_SIZE;
 	fixed_high_start = fixed_middle_start + fixed_middle_size;
 
 	for (i = 0; i < ion_pdata.nr; ++i) {
@@ -670,9 +672,12 @@ static void __init reserve_ion_memory(void)
 
 		if (heap->extra_data) {
 			int fixed_position = NOT_FIXED;
+			struct ion_cp_heap_pdata *pdata;
 
 			switch (heap->type) {
 			case ION_HEAP_TYPE_CP:
+				pdata =
+				(struct ion_cp_heap_pdata *)heap->extra_data;
 				fixed_position = ((struct ion_cp_heap_pdata *)
 					heap->extra_data)->fixed_position;
 				break;
@@ -690,6 +695,9 @@ static void __init reserve_ion_memory(void)
 				break;
 			case FIXED_MIDDLE:
 				heap->base = fixed_middle_start;
+				pdata->secure_base = fixed_middle_start -
+								HOLE_SIZE;
+				pdata->secure_size = HOLE_SIZE + heap->size;
 				break;
 			case FIXED_HIGH:
 				heap->base = fixed_high_start;
@@ -1303,6 +1311,87 @@ static struct platform_device *mdm_devices[] __initdata = {
 	&mdm_device,
 };
 
+#define MSM_TSIF0_PHYS			(0x18200000)
+#define MSM_TSIF1_PHYS			(0x18201000)
+#define MSM_TSIF_SIZE			(0x200)
+#define MSM_TSPP_PHYS			(0x18202000)
+#define MSM_TSPP_SIZE			(0x1000)
+#define MSM_TSPP_BAM_PHYS		(0x18204000)
+#define MSM_TSPP_BAM_SIZE		(0x2000)
+
+#define TSIF_0_CLK       GPIO_CFG(75, 1, GPIO_CFG_INPUT, \
+	GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA)
+#define TSIF_0_EN        GPIO_CFG(76, 1, GPIO_CFG_INPUT, \
+	GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA)
+#define TSIF_0_DATA      GPIO_CFG(77, 1, GPIO_CFG_INPUT, \
+	GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA)
+#define TSIF_0_SYNC      GPIO_CFG(82, 1, GPIO_CFG_INPUT, \
+	GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA)
+#define TSIF_1_CLK       GPIO_CFG(79, 1, GPIO_CFG_INPUT, \
+	GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA)
+#define TSIF_1_EN        GPIO_CFG(80, 1, GPIO_CFG_INPUT, \
+	GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA)
+#define TSIF_1_DATA      GPIO_CFG(81, 1, GPIO_CFG_INPUT, \
+	GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA)
+#define TSIF_1_SYNC      GPIO_CFG(78, 1, GPIO_CFG_INPUT, \
+	GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA)
+
+static const struct msm_gpio tsif_gpios[] = {
+	{ .gpio_cfg = TSIF_0_CLK,  .label =  "tsif0_clk", },
+	{ .gpio_cfg = TSIF_0_EN,   .label =  "tsif0_en", },
+	{ .gpio_cfg = TSIF_0_DATA, .label =  "tsif0_data", },
+	{ .gpio_cfg = TSIF_0_SYNC, .label =  "tsif0_sync", },
+	{ .gpio_cfg = TSIF_1_CLK,  .label =  "tsif1_clk", },
+	{ .gpio_cfg = TSIF_1_EN,   .label =  "tsif1_en", },
+	{ .gpio_cfg = TSIF_1_DATA, .label =  "tsif1_data", },
+	{ .gpio_cfg = TSIF_1_SYNC, .label =  "tsif1_sync", },
+};
+
+static struct resource tspp_resources[] = {
+	[0] = {
+		.flags = IORESOURCE_IRQ,
+		.start = TSIF_TSPP_IRQ,
+		.end   = TSIF1_IRQ,
+	},
+	[1] = {
+		.flags = IORESOURCE_MEM,
+		.start = MSM_TSIF0_PHYS,
+		.end   = MSM_TSIF0_PHYS + MSM_TSIF_SIZE - 1,
+	},
+	[2] = {
+		.flags = IORESOURCE_MEM,
+		.start = MSM_TSIF1_PHYS,
+		.end   = MSM_TSIF1_PHYS + MSM_TSIF_SIZE - 1,
+	},
+	[3] = {
+		.flags = IORESOURCE_MEM,
+		.start = MSM_TSPP_PHYS,
+		.end   = MSM_TSPP_PHYS + MSM_TSPP_SIZE - 1,
+	},
+	[4] = {
+		.flags = IORESOURCE_MEM,
+		.start = MSM_TSPP_BAM_PHYS,
+		.end   = MSM_TSPP_BAM_PHYS + MSM_TSPP_BAM_SIZE - 1,
+	},
+};
+
+static struct msm_tspp_platform_data tspp_platform_data = {
+	.num_gpios = ARRAY_SIZE(tsif_gpios),
+	.gpios = tsif_gpios,
+	.tsif_pclk = "tsif_pclk",
+	.tsif_ref_clk = "tsif_ref_clk",
+};
+
+static struct platform_device msm_device_tspp = {
+	.name          = "msm_tspp",
+	.id            = 0,
+	.num_resources = ARRAY_SIZE(tspp_resources),
+	.resource      = tspp_resources,
+	.dev = {
+		.platform_data = &tspp_platform_data
+	},
+};
+
 #define MSM_SHARED_RAM_PHYS 0x80000000
 
 static void __init msm8960_map_io(void)
@@ -1319,12 +1408,6 @@ static void __init msm8960_init_irq(void)
 	msm_mpm_irq_extn_init();
 	gic_init(0, GIC_PPI_START, MSM_QGIC_DIST_BASE,
 						(void *)MSM_QGIC_CPU_BASE);
-
-	/* Edge trigger PPIs except AVS_SVICINT and AVS_SVICINTSWDONE */
-	writel_relaxed(0xFFFFD7FF, MSM_QGIC_DIST_BASE + GIC_DIST_CONFIG + 4);
-
-	writel_relaxed(0x0000FFFF, MSM_QGIC_DIST_BASE + GIC_DIST_ENABLE_SET);
-	mb();
 }
 
 static void __init msm8960_init_buses(void)
@@ -1345,6 +1428,7 @@ static void __init msm8960_init_buses(void)
 
 static struct msm_spi_platform_data msm8960_qup_spi_gsbi1_pdata = {
 	.max_clock_speed = 15060000,
+	.infinite_mode	 = 1
 };
 
 #ifdef CONFIG_USB_MSM_OTG_72K
@@ -1353,7 +1437,7 @@ static struct msm_otg_platform_data msm_otg_pdata;
 static int wr_phy_init_seq[] = {
 	0x44, 0x80, /* set VBUS valid threshold
 			and disconnect valid threshold */
-	0x38, 0x81, /* update DC voltage level */
+	0x68, 0x81, /* update DC voltage level */
 	0x14, 0x82, /* set preemphasis and rise/fall time */
 	0x13, 0x83, /* set source impedance adjusment */
 	-1};
@@ -1361,7 +1445,7 @@ static int wr_phy_init_seq[] = {
 static int liquid_v1_phy_init_seq[] = {
 	0x44, 0x80,/* set VBUS valid threshold
 			and disconnect valid threshold */
-	0x3C, 0x81,/* update DC voltage level */
+	0x6C, 0x81,/* update DC voltage level */
 	0x18, 0x82,/* set preemphasis and rise/fall time */
 	0x23, 0x83,/* set source impedance sdjusment */
 	-1};
@@ -2402,7 +2486,6 @@ static struct platform_device *common_devices[] __initdata = {
 	&msm_device_vidc,
 	&msm_device_bam_dmux,
 	&msm_fm_platform_init,
-
 #if defined(CONFIG_TSIF) || defined(CONFIG_TSIF_MODULE)
 #ifdef CONFIG_MSM_USE_TSIF1
 	&msm_device_tsif[1],
@@ -2410,7 +2493,7 @@ static struct platform_device *common_devices[] __initdata = {
 	&msm_device_tsif[0],
 #endif
 #endif
-
+	&msm_device_tspp,
 #ifdef CONFIG_HW_RANDOM_MSM
 	&msm_device_rng,
 #endif
@@ -2768,8 +2851,8 @@ static struct isl_platform_data isl_data __initdata = {
 	.chg_detection_config	= NULL,	/* Not required when notify-by-pmic */
 	.max_system_voltage	= 4200,
 	.min_system_voltage	= 3200,
-	.chgcurrent		= 1000, /* 1900, */
-	.term_current		= 400,	/* Need fine tuning */
+	.chgcurrent		= 1900,
+	.term_current		= 0,
 	.input_current		= 2048,
 };
 

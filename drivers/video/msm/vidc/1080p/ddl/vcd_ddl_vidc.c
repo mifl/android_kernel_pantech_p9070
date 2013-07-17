@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -545,7 +545,7 @@ void ddl_vidc_encode_init_codec(struct ddl_client_context *ddl)
 			encoder->frame_rate.fps_denominator;
 	if ((encoder->codec.codec == VCD_CODEC_H263) &&
 		(DDL_FRAMERATE_SCALE(DDL_INITIAL_FRAME_RATE)
-		 != scaled_frame_rate))
+		 != scaled_frame_rate) && encoder->plusptype_enable)
 		h263_cpfc_enable = true;
 	vidc_sm_set_extended_encoder_control(&ddl->shared_mem
 		[ddl->command_channel], hdr_ext_control,
@@ -910,6 +910,7 @@ void ddl_vidc_decode_frame_run(struct ddl_client_context *ddl)
 		decoder->flush_pending = false;
 	} else
 		dec_param.dpb_flush = false;
+	ddl_set_vidc_timeout(ddl);
 	vidc_sm_set_frame_tag(&ddl->shared_mem[ddl->command_channel],
 		bit_stream->ip_frm_tag);
 	if (ddl_context->pix_cache_enable) {

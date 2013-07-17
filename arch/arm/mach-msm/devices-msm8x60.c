@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -173,8 +173,6 @@ void __init msm8x60_init_irq(void)
 	msm_mpm_irq_extn_init();
 	gic_init(0, GIC_PPI_START, MSM_QGIC_DIST_BASE, (void *)MSM_QGIC_CPU_BASE);
 
-	/* Edge trigger PPIs except AVS_SVICINT and AVS_SVICINTSWDONE */
-	writel(0xFFFFD7FF, MSM_QGIC_DIST_BASE + GIC_DIST_CONFIG + 4);
 }
 
 #define MSM_LPASS_QDSP6SS_PHYS 0x28800000
@@ -1622,6 +1620,7 @@ struct platform_device msm_rotator_device = {
 #ifdef CONFIG_MSM_DSPS
 
 #define PPSS_REG_PHYS_BASE	0x12080000
+#define PPSS_PAUSE_REG          0x1804
 
 #define MHZ (1000*1000)
 
@@ -1684,6 +1683,7 @@ struct msm_dsps_platform_data msm_dsps_pdata = {
 	.regs = dsps_regs,
 	.regs_num = ARRAY_SIZE(dsps_regs),
 	.init = dsps_init1,
+	.ppss_pause_reg = PPSS_PAUSE_REG,
 	.signature = DSPS_SIGNATURE,
 };
 

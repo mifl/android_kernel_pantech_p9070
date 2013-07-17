@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -2850,18 +2850,36 @@ static int tabla_codec_mclk_index(const struct tabla_priv *tabla)
 	}
 }
 
-static void tabla_codec_calibrate_hs_polling(struct snd_soc_codec *codec)
+static s16 tabla_get_current_v_ins(struct tabla_priv *tabla, bool hu)
 {
-	u8 *n_ready, *n_cic;
-	struct tabla_mbhc_btn_detect_cfg *btn_det;
+	s16 v_ins;
+	if ((tabla->mbhc_data.micb_mv != VDDIO_MICBIAS_MV) &&
+	    tabla->mbhc_micbias_switched)
+		v_ins = hu ? (s16)tabla->mbhc_data.adj_v_ins_hu :
+			     (s16)tabla->mbhc_data.adj_v_ins_h;
+	else
+		v_ins = hu ? (s16)tabla->mbhc_data.v_ins_hu :
+			     (s16)tabla->mbhc_data.v_ins_h;
+	return v_ins;
+}
+
+static s16 tabla_get_current_v_hs_max(struct tabla_priv *tabla)
+{
+	s16 v_hs_max;
+	struct tabla_mbhc_plug_type_cfg *plug_type;
+
+	plug_type = TABLA_MBHC_CAL_PLUG_TYPE_PTR(tabla->mbhc_cfg.calibration);
+	if ((tabla->mbhc_data.micb_mv != VDDIO_MICBIAS_MV) &&
+	    tabla->mbhc_micbias_switched)
+		v_hs_max = tabla->mbhc_data.adj_v_hs_max;
+	else
+		v_hs_max = plug_type->v_hs_max;
+	return v_hs_max;
+}
+
+static void tabla_codec_calibrate_rel(struct snd_soc_codec *codec)
+{
 	struct tabla_priv *tabla = snd_soc_codec_get_drvdata(codec);
-
-	btn_det = TABLA_MBHC_CAL_BTN_DET_PTR(tabla->mbhc_cfg.calibration);
-
-	snd_soc_write(codec, TABLA_A_CDC_MBHC_VOLT_B1_CTL,
-		      tabla->mbhc_data.v_ins_hu & 0xFF);
-	snd_soc_write(codec, TABLA_A_CDC_MBHC_VOLT_B2_CTL,
-		      (tabla->mbhc_data.v_ins_hu >> 8) & 0xFF);
 
 	snd_soc_write(codec, TABLA_A_CDC_MBHC_VOLT_B3_CTL,
 		      tabla->mbhc_data.v_b1_hu & 0xFF);
@@ -2882,6 +2900,23 @@ static void tabla_codec_calibrate_hs_polling(struct snd_soc_codec *codec)
 		      tabla->mbhc_data.v_brl & 0xFF);
 	snd_soc_write(codec, TABLA_A_CDC_MBHC_VOLT_B12_CTL,
 		      (tabla->mbhc_data.v_brl >> 8) & 0xFF);
+}
+
+static void tabla_codec_calibrate_hs_polling(struct snd_soc_codec *codec)
+{
+	u8 *n_ready, *n_cic;
+	struct tabla_mbhc_btn_detect_cfg *btn_det;
+	struct tabla_priv *tabla = snd_soc_codec_get_drvdata(codec);
+	const s16 v_ins_hu = tabla_get_current_v_ins(tabla, true);
+
+	btn_det = TABLA_MBHC_CAL_BTN_DET_PTR(tabla->mbhc_cfg.calibration);
+
+	snd_soc_write(codec, TABLA_A_CDC_MBHC_VOLT_B1_CTL,
+		      v_ins_hu & 0xFF);
+	snd_soc_write(codec, TABLA_A_CDC_MBHC_VOLT_B2_CTL,
+		      (v_ins_hu >> 8) & 0xFF);
+
+	tabla_codec_calibrate_rel(codec);
 
 	n_ready = tabla_mbhc_cal_btn_det_mp(btn_det, TABLA_BTN_DET_N_READY);
 	snd_soc_write(codec, TABLA_A_CDC_MBHC_TIMER_B1_CTL,
@@ -3843,15 +3878,71 @@ void *tabla_mbhc_cal_btn_det_mp(const struct tabla_mbhc_btn_detect_cfg* btn_det,
 	return ret;
 }
 
+static s16 tabla_scale_v_micb_vddio(struct tabla_priv *tabla, int v,
+				    bool tovddio)
+{
+	int r;
+	int vddio_k, mb_k;
+	vddio_k = tabla_find_k_value(tabla->pdata->micbias.ldoh_v,
+				     VDDIO_MICBIAS_MV);
+	mb_k = tabla_find_k_value(tabla->pdata->micbias.ldoh_v,
+				  tabla->mbhc_data.micb_mv);
+	if (tovddio)
+		r = v * vddio_k / mb_k;
+	else
+		r = v * mb_k / vddio_k;
+	return r;
+}
+
+static void tabla_mbhc_calc_rel_thres(struct snd_soc_codec *codec, s16 mv)
+{
+	s16 deltamv;
+	struct tabla_priv *tabla;
+	struct tabla_mbhc_btn_detect_cfg *btn_det;
+
+	tabla = snd_soc_codec_get_drvdata(codec);
+	btn_det = TABLA_MBHC_CAL_BTN_DET_PTR(tabla->mbhc_cfg.calibration);
+
+	tabla->mbhc_data.v_b1_h =
+	    tabla_codec_v_sta_dce(codec, DCE,
+				  mv + btn_det->v_btn_press_delta_cic);
+
+	tabla->mbhc_data.v_brh = tabla->mbhc_data.v_b1_h;
+
+	tabla->mbhc_data.v_brl = TABLA_MBHC_BUTTON_MIN;
+
+	deltamv = mv + btn_det->v_btn_press_delta_sta;
+	tabla->mbhc_data.v_b1_hu = tabla_codec_v_sta_dce(codec, STA, deltamv);
+
+	deltamv = mv + btn_det->v_btn_press_delta_cic;
+	tabla->mbhc_data.v_b1_huc = tabla_codec_v_sta_dce(codec, DCE, deltamv);
+}
+
+static void tabla_mbhc_set_rel_thres(struct snd_soc_codec *codec, s16 mv)
+{
+	tabla_mbhc_calc_rel_thres(codec, mv);
+	tabla_codec_calibrate_rel(codec);
+}
+
+static s16 tabla_mbhc_highest_btn_mv(struct snd_soc_codec *codec)
+{
+	struct tabla_priv *tabla;
+	struct tabla_mbhc_btn_detect_cfg *btn_det;
+	u16 *btn_high;
+
+	tabla = snd_soc_codec_get_drvdata(codec);
+	btn_det = TABLA_MBHC_CAL_BTN_DET_PTR(tabla->mbhc_cfg.calibration);
+	btn_high = tabla_mbhc_cal_btn_det_mp(btn_det, TABLA_BTN_DET_V_BTN_HIGH);
+
+	return btn_high[btn_det->num_btn - 1];
+}
+
 static void tabla_mbhc_calc_thres(struct snd_soc_codec *codec)
 {
 	struct tabla_priv *tabla;
-	s16 btn_mv = 0, btn_delta_mv;
 	struct tabla_mbhc_btn_detect_cfg *btn_det;
 	struct tabla_mbhc_plug_type_cfg *plug_type;
-	u16 *btn_high;
 	u8 *n_ready;
-	int i;
 
 	tabla = snd_soc_codec_get_drvdata(codec);
 	btn_det = TABLA_MBHC_CAL_BTN_DET_PTR(tabla->mbhc_cfg.calibration);
@@ -3875,23 +3966,34 @@ static void tabla_mbhc_calc_thres(struct snd_soc_codec *codec)
 	tabla->mbhc_data.v_ins_h =
 	    tabla_codec_v_sta_dce(codec, DCE, plug_type->v_hs_max);
 
-	btn_high = tabla_mbhc_cal_btn_det_mp(btn_det, TABLA_BTN_DET_V_BTN_HIGH);
-	for (i = 0; i < btn_det->num_btn; i++)
-		btn_mv = btn_high[i] > btn_mv ? btn_high[i] : btn_mv;
+	tabla->mbhc_data.v_inval_ins_low = TABLA_MBHC_FAKE_INSERT_LOW;
+	if (tabla->mbhc_cfg.gpio)
+		tabla->mbhc_data.v_inval_ins_high =
+		    TABLA_MBHC_FAKE_INSERT_HIGH;
+	else
+		tabla->mbhc_data.v_inval_ins_high =
+		    TABLA_MBHC_FAKE_INS_HIGH_NO_GPIO;
 
-	tabla->mbhc_data.v_b1_h = tabla_codec_v_sta_dce(codec, DCE, btn_mv);
-	btn_delta_mv = btn_mv + btn_det->v_btn_press_delta_sta;
+	if (tabla->mbhc_data.micb_mv != VDDIO_MICBIAS_MV) {
+		tabla->mbhc_data.adj_v_hs_max =
+		    tabla_scale_v_micb_vddio(tabla, plug_type->v_hs_max, true);
+		tabla->mbhc_data.adj_v_ins_hu =
+		    tabla_codec_v_sta_dce(codec, STA,
+					  tabla->mbhc_data.adj_v_hs_max);
+		tabla->mbhc_data.adj_v_ins_h =
+		    tabla_codec_v_sta_dce(codec, DCE,
+					  tabla->mbhc_data.adj_v_hs_max);
+		tabla->mbhc_data.v_inval_ins_low =
+		    tabla_scale_v_micb_vddio(tabla,
+					     tabla->mbhc_data.v_inval_ins_low,
+					     false);
+		tabla->mbhc_data.v_inval_ins_high =
+		    tabla_scale_v_micb_vddio(tabla,
+					     tabla->mbhc_data.v_inval_ins_high,
+					     false);
+	}
 
-	tabla->mbhc_data.v_b1_hu =
-	    tabla_codec_v_sta_dce(codec, STA, btn_delta_mv);
-
-	btn_delta_mv = btn_mv + btn_det->v_btn_press_delta_cic;
-
-	tabla->mbhc_data.v_b1_huc =
-	    tabla_codec_v_sta_dce(codec, DCE, btn_delta_mv);
-
-	tabla->mbhc_data.v_brh = tabla->mbhc_data.v_b1_h;
-	tabla->mbhc_data.v_brl = TABLA_MBHC_BUTTON_MIN;
+	tabla_mbhc_calc_rel_thres(codec, tabla_mbhc_highest_btn_mv(codec));
 
 	tabla->mbhc_data.v_no_mic =
 	    tabla_codec_v_sta_dce(codec, STA, plug_type->v_no_mic);
@@ -4043,8 +4145,10 @@ static int tabla_get_button_mask(const int btn)
 static irqreturn_t tabla_dce_handler(int irq, void *data)
 {
 	int i, mask;
-	short dce, sta, bias_value_dce;
-	s32 mv, stamv, bias_mv_dce;
+	short dce, sta;
+	s32 mv, mv_s, stamv, stamv_s;
+	bool vddio;
+	u16 *btn_high;
 	int btn = -1, meas = 0;
 	struct tabla_priv *priv = data;
 	const struct tabla_mbhc_btn_detect_cfg *d =
@@ -4057,7 +4161,8 @@ static irqreturn_t tabla_dce_handler(int irq, void *data)
 
 	pr_debug("%s: enter\n", __func__);
 
-	TABLA_ACQUIRE_LOCK(priv->cdc_resource_lock);
+	btn_high = tabla_mbhc_cal_btn_det_mp(d, TABLA_BTN_DET_V_BTN_HIGH);
+	TABLA_ACQUIRE_LOCK(priv->codec_resource_lock);
 	if (priv->mbhc_state == MBHC_STATE_POTENTIAL_RECOVERY) {
 		pr_debug("%s: mbhc is being recovered, skip button press\n",
 			 __func__);
@@ -4089,31 +4194,35 @@ static irqreturn_t tabla_dce_handler(int irq, void *data)
 			pr_debug("%s: Button is already released shortly after "
 				 "resume\n", __func__);
 			n_btn_meas = 0;
-		} else {
-			pr_debug("%s: Button is already released without "
-				 "resume", __func__);
-			sta = tabla_codec_read_sta_result(codec);
-			stamv = tabla_codec_sta_dce_v(codec, 0, sta);
-			btn = tabla_determine_button(priv, mv);
-			if (btn != tabla_determine_button(priv, stamv))
-				btn = -1;
-			goto done;
 		}
 	}
 
+	/* save hw dce */
+	btnmeas[meas++] = tabla_determine_button(priv, mv_s);
+	pr_debug("%s: meas HW - DCE %x,%d,%d button %d\n", __func__,
+		 dce, mv, mv_s, btnmeas[0]);
+	if (n_btn_meas == 0) {
+		sta = tabla_codec_read_sta_result(codec);
+		stamv_s = stamv = tabla_codec_sta_dce_v(codec, 0, sta);
+		if (vddio)
+			stamv_s = tabla_scale_v_micb_vddio(priv, stamv, false);
+		btn = tabla_determine_button(priv, stamv_s);
+		pr_debug("%s: meas HW - STA %x,%d,%d button %d\n", __func__,
+			 sta, stamv, stamv_s, btn);
+		BUG_ON(meas != 1);
+		if (btnmeas[0] != btn)
+			btn = -1;
+	}
+
 	/* determine pressed button */
-	btnmeas[meas++] = tabla_determine_button(priv, mv);
-	pr_debug("%s: meas %d - DCE %d,%d, button %d\n", __func__,
-		 meas - 1, dce, mv, btnmeas[meas - 1]);
-	if (n_btn_meas == 0)
-		btn = btnmeas[0];
 	for (; ((d->n_btn_meas) && (meas < (d->n_btn_meas + 1))); meas++) {
-		bias_value_dce = tabla_codec_sta_dce(codec, 1, false);
-		bias_mv_dce = tabla_codec_sta_dce_v(codec, 1, bias_value_dce);
-		btnmeas[meas] = tabla_determine_button(priv, bias_mv_dce);
-		pr_debug("%s: meas %d - DCE %d,%d, button %d\n",
-			 __func__, meas, bias_value_dce, bias_mv_dce,
-			 btnmeas[meas]);
+		dce = tabla_codec_sta_dce(codec, 1, false);
+		mv = tabla_codec_sta_dce_v(codec, 1, dce);
+		mv_s = vddio ? tabla_scale_v_micb_vddio(priv, mv, false) : mv;
+
+		btnmeas[meas] = tabla_determine_button(priv, mv_s);
+		pr_debug("%s: meas %d - DCE %x,%d,%d button %d\n",
+			 __func__, meas, dce, mv, mv_s, btnmeas[meas]);
 		/* if large enough measurements are collected,
 		 * start to check if last all n_btn_con measurements were
 		 * in same button low/high range */
@@ -4140,6 +4249,8 @@ static irqreturn_t tabla_dce_handler(int irq, void *data)
 				 "press\n", __func__);
 			goto done;
 		}
+		/* narrow down release threshold */
+		tabla_mbhc_set_rel_thres(codec, btn_high[btn]);
 		mask = tabla_get_button_mask(btn);
 		priv->buttons_pressed |= mask;
 		tabla_lock_sleep(core);
@@ -4240,6 +4351,8 @@ static irqreturn_t tabla_release_handler(int irq, void *data)
 		priv->buttons_pressed &= ~TABLA_JACK_BUTTON_MASK;
 	}
 
+	/* revert narrowed release threshold */
+	tabla_mbhc_calc_rel_thres(codec, tabla_mbhc_highest_btn_mv(codec));
 	tabla_codec_calibrate_hs_polling(codec);
 
 	if (priv->mbhc_cfg.gpio)
@@ -5567,6 +5680,11 @@ static const struct tabla_reg_mask_val tabla_codec_reg_init_val[] = {
 	{TABLA_A_RX_LINE_3_GAIN, 0x10, 0x10},
 	{TABLA_A_RX_LINE_4_GAIN, 0x10, 0x10},
 
+	/* Set the MICBIAS default output as pull down*/
+	{TABLA_A_MICB_1_CTL, 0x01, 0x01},
+	{TABLA_A_MICB_2_CTL, 0x01, 0x01},
+	{TABLA_A_MICB_3_CTL, 0x01, 0x01},
+
 	/* Initialize mic biases to differential mode */
 	{TABLA_A_MICB_1_INT_RBIAS, 0x24, 0x24},
 	{TABLA_A_MICB_2_INT_RBIAS, 0x24, 0x24},
@@ -5606,11 +5724,16 @@ static const struct tabla_reg_mask_val tabla_codec_reg_init_val[] = {
 };
 
 static const struct tabla_reg_mask_val tabla_1_x_codec_reg_init_val[] = {
+	/* Set the MICBIAS default output as pull down*/
+	{TABLA_1_A_MICB_4_CTL, 0x01, 0x01},
 	/* Initialize mic biases to differential mode */
 	{TABLA_1_A_MICB_4_INT_RBIAS, 0x24, 0x24},
 };
 
 static const struct tabla_reg_mask_val tabla_2_higher_codec_reg_init_val[] = {
+
+	/* Set the MICBIAS default output as pull down*/
+	{TABLA_2_A_MICB_4_CTL, 0x01, 0x01},
 	/* Initialize mic biases to differential mode */
 	{TABLA_2_A_MICB_4_INT_RBIAS, 0x24, 0x24},
 };
