@@ -109,17 +109,8 @@
 #define twl_has_watchdog()        false
 #endif
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 #if defined(CONFIG_TWL4030_CODEC) || defined(CONFIG_TWL4030_CODEC_MODULE) ||\
 	defined(CONFIG_TWL6040_CORE) || defined(CONFIG_TWL6040_CORE_MODULE)
-=======
-#if defined(CONFIG_MFD_TWL4030_AUDIO) || defined(CONFIG_MFD_TWL4030_AUDIO_MODULE) ||\
-=======
-#if defined(CONFIG_TWL4030_CODEC) || defined(CONFIG_TWL4030_CODEC_MODULE) ||\
->>>>>>> revert "mfd: Fix twl4030 dependencies for audio codec"
-	defined(CONFIG_SND_SOC_TWL6040) || defined(CONFIG_SND_SOC_TWL6040_MODULE)
->>>>>>> mfd: Fix twl4030 dependencies for audio codec
 #define twl_has_codec()	true
 #else
 #define twl_has_codec()	false
