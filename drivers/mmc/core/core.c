@@ -1242,8 +1242,7 @@ void mmc_attach_bus(struct mmc_host *host, const struct mmc_bus_ops *ops)
 }
 
 /*
- * Remove the current bus handler from a host. Assumes that there are
- * no interesting cards left, so the bus is powered down.
+ * Remove the current bus handler from a host.
  */
 void mmc_detach_bus(struct mmc_host *host)
 {
@@ -1259,8 +1258,6 @@ void mmc_detach_bus(struct mmc_host *host)
 	host->bus_dead = 1;
 
 	spin_unlock_irqrestore(&host->lock, flags);
-
-	mmc_power_off(host);
 
 	mmc_bus_put(host);
 }
@@ -1546,67 +1543,64 @@ out:
  *
  * Caller must claim host before calling this function.
  */
-
 int mmc_erase(struct mmc_card *card, unsigned int from, unsigned int nr,
 	      unsigned int arg)
 {
 #ifndef SUPPRESS_MMC_CAP_ERASE
-   unsigned int rem, to = from + nr;
+	unsigned int rem, to = from + nr;
 
-   if (!(card->host->caps & MMC_CAP_ERASE) ||
-       !(card->csd.cmdclass & CCC_ERASE))
-      return -EOPNOTSUPP;
+	if (!(card->host->caps & MMC_CAP_ERASE) ||
+	    !(card->csd.cmdclass & CCC_ERASE))
+		return -EOPNOTSUPP;
 
-   if (!card->erase_size)
-      return -EOPNOTSUPP;
+	if (!card->erase_size)
+		return -EOPNOTSUPP;
 
-   if (mmc_card_sd(card) && arg != MMC_ERASE_ARG)
-      return -EOPNOTSUPP;
+	if (mmc_card_sd(card) && arg != MMC_ERASE_ARG)
+		return -EOPNOTSUPP;
 
-   if ((arg & MMC_SECURE_ARGS) &&
-       !(card->ext_csd.sec_feature_support & EXT_CSD_SEC_ER_EN))
-      return -EOPNOTSUPP;
+	if ((arg & MMC_SECURE_ARGS) &&
+	    !(card->ext_csd.sec_feature_support & EXT_CSD_SEC_ER_EN))
+		return -EOPNOTSUPP;
 
-   if ((arg & MMC_TRIM_ARGS) &&
-       !(card->ext_csd.sec_feature_support & EXT_CSD_SEC_GB_CL_EN))
-      return -EOPNOTSUPP;
+	if ((arg & MMC_TRIM_ARGS) &&
+	    !(card->ext_csd.sec_feature_support & EXT_CSD_SEC_GB_CL_EN))
+		return -EOPNOTSUPP;
 
-   if (arg == MMC_SECURE_ERASE_ARG) {
-      if (from % card->erase_size || nr % card->erase_size)
-         return -EINVAL;
-   }
+	if (arg == MMC_SECURE_ERASE_ARG) {
+		if (from % card->erase_size || nr % card->erase_size)
+			return -EINVAL;
+	}
 
-   if (arg == MMC_ERASE_ARG) {
-      rem = from % card->erase_size;
-      if (rem) {
-         rem = card->erase_size - rem;
-         from += rem;
-         if (nr > rem)
-            nr -= rem;
-         else
-            return 0;
-      }
-      rem = nr % card->erase_size;
-      if (rem)
-         nr -= rem;
-   }
+	if (arg == MMC_ERASE_ARG) {
+		rem = from % card->erase_size;
+		if (rem) {
+			rem = card->erase_size - rem;
+			from += rem;
+			if (nr > rem)
+				nr -= rem;
+			else
+				return 0;
+		}
+		rem = nr % card->erase_size;
+		if (rem)
+			nr -= rem;
+	}
 
-   if (nr == 0)
-      return 0;
+	if (nr == 0)
+		return 0;
 
-   to = from + nr;
+	to = from + nr;
 
-   if (to <= from)
-      return -EINVAL;
+	if (to <= from)
+		return -EINVAL;
 
-   /* 'from' and 'to' are inclusive */
-   to -= 1;
+	/* 'from' and 'to' are inclusive */
+	to -= 1;
 
-   return mmc_do_erase(card, from, to, arg);
-#else 
-
-   return -EOPNOTSUPP;
-
+	return mmc_do_erase(card, from, to, arg);
+#else /* SUPPRESS_MMC_CAP_ERASE */
+	return -EOPNOTSUPP;
 #endif /* SUPPRESS_MMC_CAP_ERASE */
 }
 EXPORT_SYMBOL(mmc_erase);
@@ -1614,11 +1608,11 @@ EXPORT_SYMBOL(mmc_erase);
 int mmc_can_erase(struct mmc_card *card)
 {
 #ifndef SUPPRESS_MMC_CAP_ERASE
-   if ((card->host->caps & MMC_CAP_ERASE) &&
-       (card->csd.cmdclass & CCC_ERASE) && card->erase_size)
-      return 1;
+	if ((card->host->caps & MMC_CAP_ERASE) &&
+	    (card->csd.cmdclass & CCC_ERASE) && card->erase_size)
+		return 1;
 #endif /* SUPPRESS_MMC_CAP_ERASE */
-   return 0;
+	return 0;
 }
 EXPORT_SYMBOL(mmc_can_erase);
 
@@ -1968,6 +1962,7 @@ void mmc_stop_host(struct mmc_host *host)
 
 		mmc_claim_host(host);
 		mmc_detach_bus(host);
+		mmc_power_off(host);
 		mmc_release_host(host);
 		mmc_bus_put(host);
 		return;
@@ -2214,6 +2209,7 @@ int mmc_pm_notify(struct notifier_block *notify_block,
 			host->bus_ops->remove(host);
 
 		mmc_detach_bus(host);
+		mmc_power_off(host);
 		mmc_release_host(host);
 		host->pm_flags = 0;
 		break;
