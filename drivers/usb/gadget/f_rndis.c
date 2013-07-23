@@ -622,7 +622,6 @@ rndis_bind(struct usb_configuration *c, struct usb_function *f)
 	struct usb_ep		*ep;
 
 #if defined(CONFIG_ANDROID_PANTECH_USB)
-//	if((pantech_usb_carrier != CARRIER_QUALCOMM) && b_pantech_usb_module){
 	if(pantech_usb_carrier != CARRIER_QUALCOMM){
 		rndis_data_intf.bInterfaceProtocol =  0xFF;
 	}else{
