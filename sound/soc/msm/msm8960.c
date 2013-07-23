@@ -61,7 +61,6 @@
 
 #define JACK_DETECT_GPIO 38
 #define JACK_DETECT_INT PM8921_GPIO_IRQ(PM8921_IRQ_BASE, JACK_DETECT_GPIO)
-#define GPIO_DETECT_USED false
 
 static u32 top_spk_pamp_gpio  = PM8921_GPIO_PM_TO_SYS(18);
 static u32 bottom_spk_pamp_gpio = PM8921_GPIO_PM_TO_SYS(19);

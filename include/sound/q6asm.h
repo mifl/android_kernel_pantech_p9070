@@ -99,7 +99,6 @@ typedef void (*app_cb)(uint32_t opcode, uint32_t token,
 struct audio_buffer {
 	dma_addr_t phys;
 	void       *data;
-	struct msm_mapped_buffer *mem_buffer;
 	uint32_t   used;
 	uint32_t   size;/* size of buffer */
 	uint32_t   actual_size; /* actual number of bytes read by DSP */
