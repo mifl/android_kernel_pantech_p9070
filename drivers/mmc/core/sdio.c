@@ -690,7 +690,7 @@ static int mmc_sdio_resume(struct mmc_host *host)
 
 #if defined (CONFIG_PANTECH_WIFI_MMC) || defined(CONFIG_SKY_WLAN_MMC)
 // 20110322 khlee_wifi for wifi suspend/resume patch
-	 err = 0;
+	err = 0;
 #endif 
 
 	BUG_ON(!host);

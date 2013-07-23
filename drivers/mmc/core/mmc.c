@@ -932,8 +932,8 @@ static int mmc_suspend(struct mmc_host *host)
 	else if (!mmc_host_is_spi(host))
 		mmc_deselect_cards(host);
 #else
-  if (!mmc_host_is_spi(host))
-    mmc_deselect_cards(host);
+	if (!mmc_host_is_spi(host))
+		mmc_deselect_cards(host);
 #endif
 	host->card->state &= ~MMC_STATE_HIGHSPEED;
 	mmc_release_host(host);

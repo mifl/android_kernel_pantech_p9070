@@ -124,11 +124,7 @@ static int charm_panic_prep(struct notifier_block *this,
 			 __func__);
 #if 0 // pz1945
 	if (get_restart_level() == RESET_SOC)
-	{
-		pr_info("%s: pm8xxx_stay_on B \n",__func__);
 		pm8xxx_stay_on();
-		pr_info("%s: pm8xxx_stay_on E \n",__func__);
-	}
 #endif
 
 	charm_disable_irqs();
@@ -253,11 +249,7 @@ static void charm_fatal_fn(struct work_struct *work)
 	pr_info("Reseting the charm due to an errfatal\n");
 #if 0 //P10911 block for mdm restart fail  //CONFIG_PANTECH_ERR_CRASH_LOGGING
 	if (get_restart_level() == RESET_SOC)
-	{
-		pr_info("%s: pm8xxx_stay_on B \n",__func__);
 		pm8xxx_stay_on();
-		pr_info("%s: pm8xxx_stay_on E \n",__func__);
-	}
 #endif
 	subsystem_restart("external_modem");
 }

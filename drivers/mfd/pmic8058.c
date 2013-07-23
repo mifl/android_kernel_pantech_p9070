@@ -774,6 +774,7 @@ static int __devinit pm8058_probe(struct platform_device *pdev)
 	if (rc)
 		pr_err("%s: PMIC uart init fail: %d\n",__func__, rc);
 #endif
+
 	return 0;
 
 err:

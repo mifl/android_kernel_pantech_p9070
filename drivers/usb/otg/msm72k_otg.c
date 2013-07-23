@@ -1227,7 +1227,7 @@ void msm_otg_set_vbus_state(int online)
 	queue_work(dev->wq, &dev->sm_work);
 
 #ifdef CONFIG_SKY_CHARGING  //kobj 110513
-        first_call_from_msm_charge = true;
+	first_call_from_msm_charge = true;
 #endif  //CONFIG_SKY_CHARGING
 }
 
@@ -1845,7 +1845,7 @@ static void msm_otg_sm_work(struct work_struct *w)
 			/* Allow idle power collapse */
 			otg_pm_qos_update_latency(dev, 0);
 #ifdef CONFIG_SKY_CHARGING  //kobj 110513
-		        pr_debug("[SKY CHG] first_call =%d\n",first_call_from_msm_charge);
+			pr_debug("[SKY CHG] first_call =%d\n",first_call_from_msm_charge);
 			if(first_call_from_msm_charge)
 			{
 				msm_otg_set_power(&dev->otg, 700/* USB_WALLCHARGER_CHG_CURRENT*/);			// p14682 kobj 110803
