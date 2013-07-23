@@ -36,7 +36,6 @@
 #include <mach/board-msm8660.h>
 
 // Metrico Temp Feature
-//#if defined(CONFIG_MACH_MSM8X60_PRESTO) && (BOARD_REV < TP10)
 #if defined(CONFIG_MACH_MSM8X60_PRESTO) && (BOARD_REV <= TP10)
 #define CONFIG_MIC_BIAS_1_8V
 #endif
