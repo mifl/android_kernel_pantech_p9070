@@ -28,19 +28,12 @@
 //ADC
 #include <linux/pmic8058-xoadc.h>
 #include <linux/msm_adc.h>
-#include <mach/mpp.h>                                
+#include <mach/mpp.h>
 
+#include <BOARD_REV.h>
 #include "qt602240.h"
 
-#if defined(CONFIG_MACH_MSM8X60_EF39S)
-#include "qt602240_cfg_ef39s.h"
-#elif defined(CONFIG_MACH_MSM8X60_EF40K) || defined(CONFIG_MACH_MSM8X60_EF40S)	
-#if (BOARD_REV >= TP10)
-#include "qt602240_cfg_ef40k.h"
-#elif (BOARD_REV <= WS20)
-#include "qt602240_cfg_ef40k_ws20.h"
-#endif
-#elif defined(CONFIG_MACH_MSM8X60_PRESTO) || defined(CONFIG_MACH_MSM8X60_QUANTINA)
+#if defined(CONFIG_MACH_MSM8X60_PRESTO) || defined(CONFIG_MACH_MSM8X60_QUANTINA)
 #include "qt602240_cfg_presto.h"
 #else
 #include "qt602240_cfg.h"
