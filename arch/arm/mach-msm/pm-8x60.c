@@ -55,6 +55,7 @@
 #ifdef CONFIG_PANTECH_ERR_CRASH_LOGGING
 #include "sky_sys_reset.h"
 #endif
+
 /******************************************************************************
  * Debug Definitions
  *****************************************************************************/
@@ -1221,11 +1222,11 @@ static int __init msm_pm_init(void)
 				       S_IRGRP | S_IWGRP, NULL);
 
 	if (reset_info) {
-	  reset_info->read_proc = sky_sys_rst_read_proc_reset_info;
-	  reset_info->write_proc = sky_sys_rst_write_proc_reset_info;
-	  reset_info->data = NULL;
+	    reset_info->read_proc = sky_sys_rst_read_proc_reset_info;
+	    reset_info->write_proc = sky_sys_rst_write_proc_reset_info;
+	    reset_info->data = NULL;
 	}
-#endif 
+#endif
 	ret = request_irq(rpm_cpu0_wakeup_irq,
 			msm_pm_rpm_wakeup_interrupt, IRQF_TRIGGER_RISING,
 			"pm_drv", msm_pm_rpm_wakeup_interrupt);

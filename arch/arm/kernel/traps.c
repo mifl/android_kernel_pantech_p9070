@@ -69,37 +69,37 @@ void dump_backtrace_entry(unsigned long where, unsigned long from, unsigned long
 {
 #ifdef CONFIG_KALLSYMS
 #ifdef CONFIG_PANTECH_ERR_CRASH_LOGGING
-  char *modname;
-  const char *name;
-  unsigned long offset, size;
-  int len;
-  char buffer[KSYM_NAME_LEN];
-   
-  memset(buffer, 0x00, KSYM_NAME_LEN);
-  name = kallsyms_lookup(where, &size, &offset, &modname, buffer);
-  if (!name)
-    sprintf(buffer, "0x%lx", where);
-  
-  if (name != buffer)
-    strcpy(buffer, name);
-  len = strlen(buffer);
+	char *modname;
+	const char *name;
+	unsigned long offset, size;
+	int len;
+	char buffer[KSYM_NAME_LEN];
 
-  if(buffer[0] != 0x00)
-  {
-    apainc_kernel_stack_dump(buffer, strlen(buffer));
-  }
+	memset(buffer, 0x00, KSYM_NAME_LEN);
+	name = kallsyms_lookup(where, &size, &offset, &modname, buffer);
+	if (!name)
+		sprintf(buffer, "0x%lx", where);
+
+	if (name != buffer)
+		strcpy(buffer, name);
+	len = strlen(buffer);
+
+	if(buffer[0] != 0x00)
+	{
+		apainc_kernel_stack_dump(buffer, strlen(buffer));
+	}
 #endif
 	printk("[<%08lx>] (%pS) from [<%08lx>] (%pS)\n", where, (void *)where, from, (void *)from);
 #else
 
 #ifdef CONFIG_PANTECH_ERR_CRASH_LOGGING
-  char buffer[KSYM_NAME_LEN];
-  memset(buffer, 0x00, KSYM_NAME_LEN);
-  sprintf(buffer, "%d", where);
-  if(buffer[0] != 0x00)
-  {
-    apainc_kernel_stack_dump(buffer, strlen(buffer));
-  }
+	char buffer[KSYM_NAME_LEN];
+	memset(buffer, 0x00, KSYM_NAME_LEN);
+	sprintf(buffer, "%d", where);
+	if(buffer[0] != 0x00)
+	{
+		apainc_kernel_stack_dump(buffer, strlen(buffer));
+	}
 #endif
 
 	printk("Function entered at [<%08lx>] from [<%08lx>]\n", where, from);
@@ -292,7 +292,7 @@ static int __die(const char *str, int err, struct thread_info *thread, struct pt
 
 	print_modules();
 #ifdef CONFIG_PANTECH_ERR_CRASH_LOGGING
- 	if(!pantech_kernel_stack_dump_disable ())
+	if(!pantech_kernel_stack_dump_disable ())
 #endif
 	__show_regs(regs);
 #ifdef CONFIG_PANTECH_ERR_CRASH_LOGGING

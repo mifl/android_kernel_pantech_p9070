@@ -275,7 +275,8 @@ static int __devinit pm8xxx_vib_probe(struct platform_device *pdev)
 
 #ifndef VIBRATOR_PANTECH_PATCH //P12911
 	pm8xxx_vib_enable(&vib->timed_dev, pdata->initial_vibrate_ms);
-#endif 
+#endif
+
 	platform_set_drvdata(pdev, vib);
 
 	vib_dev = vib;

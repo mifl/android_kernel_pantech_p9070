@@ -891,8 +891,7 @@ static ssize_t audio_mvs_read(struct file *file,
 
 				if (rc == 0) {
 					rc = buf_node->frame.len +
-					    //pz1946_debug sizeof(buf_node->frame.header) +
-					    sizeof(buf_node->frame.header.frame_type) +
+					    sizeof(buf_node->frame.header) +
 					    sizeof(buf_node->frame.len);
 				} else {
 					pr_err("%s: Copy to user retuned %d",

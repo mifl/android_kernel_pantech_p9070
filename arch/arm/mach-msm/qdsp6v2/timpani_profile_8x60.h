@@ -10,17 +10,11 @@
  * GNU General Public License for more details.
  *
  */
-/* pz1946 gb-copy file */
-//============================================
-/*20110522   CONFIG_PANTECH_MODEL_SEPERATE_FILE*/
 
+/* pz1946 gb-copy file */
 #ifdef CONFIG_MACH_MSM8X60_PRESTO
 #include "timpani_profile_8x60_presto.h"
 #else
-
-//============================================
-
-
 
 #ifndef __MACH_QDSP6V2_TIMPANI_PROFILE_H
 #define __MACH_QDSP6V2_TIMPANI_PROFILE_H
@@ -3236,4 +3230,4 @@
 
 #endif
 
-#endif /*CONFIG_MACH_MSM8X60_PRESTO*/
+#endif /* CONFIG_MACH_MSM8X60_PRESTO */

@@ -18,16 +18,6 @@
 #include <linux/types.h>
 #include <linux/fb.h>
 
-/* start of fb ioctl eumerations : (lcd)march 2012.3.21 */
-/* MUST BE SYNCED WITH "android/bionic/libc/kernel/common/linux/msm_mdp.h" */
-#define MSMFB_CUSTOM_CTRL_INDEX 160 //(lcd)march 2012.3.21
-enum {
-	MSMFB_CTRL_INDEX_SKY_LCD_RESET_INIT = MSMFB_CUSTOM_CTRL_INDEX + 1,
-	MSMFB_CTRL_INDEX_SKY_LCD_FORCE_ONOFF = MSMFB_CUSTOM_CTRL_INDEX + 2,
-	MSMFB_CUSTOM_CTRL_INDEX_END
-};
-/* end of fb ioctl eumerations : (lcd)march 2012.3.21 */
-
 #define MSMFB_IOCTL_MAGIC 'm'
 #define MSMFB_GRP_DISP          _IOW(MSMFB_IOCTL_MAGIC, 1, unsigned int)
 #define MSMFB_BLIT              _IOW(MSMFB_IOCTL_MAGIC, 2, unsigned int)
@@ -77,11 +67,11 @@ enum {
 #define MSMFB_MDP_PP _IOWR(MSMFB_IOCTL_MAGIC, 156, struct msmfb_mdp_pp)
 
 #ifdef CONFIG_F_SKYDISP_LCD_RESET //(lcd)march 2012.3.21
-#define MSMFB_SKY_LCD_RESET_INIT    _IOW(MSMFB_IOCTL_MAGIC, MSMFB_CTRL_INDEX_SKY_LCD_RESET_INIT, unsigned int)
-#endif
-#ifdef CONFIG_F_SKYDISP_LCD_FORCE_ONOFF 
-#define MSMFB_SKY_LCD_FORCE_ONOFF   _IOW(MSMFB_IOCTL_MAGIC, MSMFB_CTRL_INDEX_SKY_LCD_FORCE_ONOFF, unsigned int)
-#endif
+#define MSMFB_SKY_LCD_RESET_INIT _IOW(MSMFB_IOCTL_MAGIC, 157, unsigned int)
+#endif /* CONFIG_F_SKYDISP_LCD_RESET */
+#ifdef CONFIG_F_SKYDISP_LCD_FORCE_ONOFF
+#define MSMFB_SKY_LCD_FORCE_ONOFF _IOW(MSMFB_IOCTL_MAGIC, 158, unsigned int)
+#endif /* CONFIG_F_SKYDISP_LCD_FORCE_ONOFF */
 
 #define FB_TYPE_3D_PANEL 0x10101010
 #define MDP_IMGTYPE2_START 0x10000

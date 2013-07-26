@@ -43,7 +43,7 @@ obj-$(CONFIG_TOUCHSCREEN_HTCPEN)	+= htcpen.o
 obj-$(CONFIG_TOUCHSCREEN_USB_COMPOSITE)	+= usbtouchscreen.o
 obj-$(CONFIG_TOUCHSCREEN_PCAP)		+= pcap_ts.o
 obj-$(CONFIG_TOUCHSCREEN_PENMOUNT)	+= penmount.o
-obj-$(CONFIG_TOUCHSCREEN_QT602240)	+= atmel_touch_int/ 
+obj-$(CONFIG_TOUCHSCREEN_QT602240)	+= atmel_touch_int/
 obj-$(CONFIG_TOUCHSCREEN_S3C2410)	+= s3c2410_ts.o
 obj-$(CONFIG_TOUCHSCREEN_ST1232)	+= st1232.o
 obj-$(CONFIG_TOUCHSCREEN_STMPE)		+= stmpe-ts.o
@@ -71,14 +71,3 @@ obj-$(CONFIG_TOUCHSCREEN_MSM_LEGACY)		+= msm_touch.o
 obj-$(CONFIG_TOUCHSCREEN_CY8C_TS)	+= cy8c_ts.o
 obj-$(CONFIG_TOUCHSCREEN_CYTTSP_I2C)       += cyttsp-i2c.o
 obj-$(CONFIG_TOUCHSCREEN_MELFAS_TKI)		+=tki_melfas.o
-
-# TKI Build
-#obj-m := tki_melfas.o
-#KDIR := ../../../../out/target/product/msm8660_surf/obj/KERNEL_OBJ/
-KDIR := ../../../../../../out/target/product/presto/obj/KERNEL_OBJ/
-PWD := $(shell pwd)
-EXTRA_CFLAGS += -include ../../../include/BOARD_REV.h
-all: 
-	$(MAKE) -C $(KDIR) M=$(PWD) modules
-clean:
-	rm -f -r *.o *.ko .*cmd *.mod.c .tmp* core *.i modules.order Module.symvers modules.builtin

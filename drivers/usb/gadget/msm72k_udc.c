@@ -45,7 +45,10 @@
 #include <mach/clk.h>
 #include <linux/uaccess.h>
 #include <linux/wakelock.h>
+
+#ifdef CONFIG_ANDROID_PANTECH_USB_MANAGER
 #include "f_pantech_android.h"
+#endif
 
 static const char driver_name[] = "msm72k_udc";
 
@@ -308,9 +311,9 @@ static inline enum chg_type usb_get_chg_type(struct usb_info *ui)
 
 #ifdef CONFIG_SKY_CHARGING  //kobj 110513
 #define USB_WALLCHARGER_CHG_CURRENT 700//900 // p14682 kobj 110711 chagne
-#else  //CONFIG_SKY_CHARGING
+#else
 #define USB_WALLCHARGER_CHG_CURRENT 1800
-#endif  //CONFIG_SKY_CHARGING
+#endif
 static int usb_get_max_power(struct usb_info *ui)
 {
 	struct msm_otg *otg = to_msm_otg(ui->xceiv);
@@ -342,7 +345,7 @@ static int usb_get_max_power(struct usb_info *ui)
 
 	if((ui->usb_state == USB_STATE_ADDRESS) && (temp == USB_CHG_TYPE__SDP))
 		return 500;		
-#endif  //CONFIG_SKY_CHARGING
+#endif
 
 	if (suspended || !configured)
 		return 0;
@@ -452,7 +455,7 @@ static void usb_chg_detect(struct work_struct *w)
 
 #ifdef CONFIG_SKY_CHARGING  //kobj 110513
 	dev_info(&ui->pdev->dev, "[SKY CHG]usb_chg_detect %d, chg_type %d\n", ui->usb_state, temp);
-#endif  //CONFIG_SKY_CHARGING
+#endif
 
 	atomic_set(&otg->chg_type, temp);
 	maxpower = usb_get_max_power(ui);
@@ -1143,7 +1146,6 @@ static void handle_endpoint(struct usb_info *ui, unsigned bit)
 	struct msm_endpoint *ept = ui->ept + bit;
 	struct msm_request *req;
 	unsigned long flags;
-	int req_dequeue = 1;
 	unsigned info;
 
 	/*
@@ -1163,23 +1165,12 @@ static void handle_endpoint(struct usb_info *ui, unsigned bit)
 			break;
 		}
 
-dequeue:
 		/* clean speculative fetches on req->item->info */
 		dma_coherent_post_ops();
 		info = req->item->info;
 		/* if the transaction is still in-flight, stop here */
-		if (info & INFO_ACTIVE) {
-			if (req_dequeue) {
-				req_dequeue = 0;
-				ui->dTD_update_fail_count++;
-				ept->dTD_update_fail_count++;
-				udelay(10);
-				goto dequeue;
-			} else {
-				break;
-			}
-		}
-		req_dequeue = 0;
+		if (info & INFO_ACTIVE)
+			break;
 
 		del_timer(&ept->prime_timer);
 		/* advance ept queue to the next request */
@@ -2296,7 +2287,7 @@ static int msm72k_udc_vbus_session(struct usb_gadget *_gadget, int is_active)
 	msm_hsusb_set_vbus_state(is_active);
 #ifdef CONFIG_ANDROID_PANTECH_USB_MANAGER
 	if(is_active)
-	        usb_connect_cb();
+		usb_connect_cb();
 #endif
 
 	return 0;
@@ -2334,13 +2325,14 @@ static int msm72k_pullup_internal(struct usb_gadget *_gadget, int is_active)
 static int msm72k_pullup(struct usb_gadget *_gadget, int is_active)
 {
 	struct usb_info *ui = container_of(_gadget, struct usb_info, gadget);
+	struct msm_otg *otg = to_msm_otg(ui->xceiv);
 	unsigned long flags;
-
 
 	atomic_set(&ui->softconnect, is_active);
 
 	spin_lock_irqsave(&ui->lock, flags);
-	if (ui->usb_state == USB_STATE_NOTATTACHED || ui->driver == NULL) {
+	if (ui->usb_state == USB_STATE_NOTATTACHED || ui->driver == NULL ||
+		atomic_read(&otg->chg_type) == USB_CHG_TYPE__WALLCHARGER) {
 		spin_unlock_irqrestore(&ui->lock, flags);
 		return 0;
 	}

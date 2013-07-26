@@ -599,13 +599,11 @@ int q6asm_audio_client_buf_alloc(unsigned int dir,
 					buf[cnt].used = 1;
 					buf[cnt].size = bufsz;
 					buf[cnt].actual_size = bufsz;
-					pr_debug("%s data[%p]phys[%p][%p]"
-						 "mem_buffer[%p]\n",
+					pr_debug("%s data[%p]phys[%p][%p]\n",
 						__func__,
 					   (void *)buf[cnt].data,
 					   (void *)buf[cnt].phys,
-					   (void *)&buf[cnt].phys,
-					   (void *)buf[cnt].mem_buffer);
+					   (void *)&buf[cnt].phys);
 					cnt++;
 				}
 			}
@@ -633,7 +631,6 @@ int q6asm_audio_client_buf_alloc_contiguous(unsigned int dir,
 	int cnt = 0;
 	int rc = 0;
 	struct audio_buffer *buf;
-
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
 	int len;
 #else

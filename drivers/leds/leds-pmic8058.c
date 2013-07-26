@@ -82,8 +82,9 @@ static void kp_bl_set(struct pmic8058_led_data *led, enum led_brightness value)
 
 	spin_lock_irqsave(&led->value_lock, flags);
 	level = (value << PM8058_DRV_KEYPAD_BL_SHIFT) &
- 				 PM8058_DRV_KEYPAD_BL_MASK;
-    dbg("[LeD driver][leds-pmic8058.c] %s(value %d)\n ",__func__,value); //JCK 
+				 PM8058_DRV_KEYPAD_BL_MASK;
+
+	dbg("[LeD driver][leds-pmic8058.c] %s(value %d)\n ",__func__,value); //JCK 
 	led->reg_kp &= ~PM8058_DRV_KEYPAD_BL_MASK;
 	led->reg_kp |= level;
 	spin_unlock_irqrestore(&led->value_lock, flags);
@@ -96,7 +97,7 @@ static void kp_bl_set(struct pmic8058_led_data *led, enum led_brightness value)
 
 static enum led_brightness kp_bl_get(struct pmic8058_led_data *led)
 {
-    dbg("[LeD driver][leds-pmic8058.c] %s()\n ",__func__); //JCK 
+	dbg("[LeD driver][leds-pmic8058.c] %s()\n ",__func__); //JCK 
 	if ((led->reg_kp & PM8058_DRV_KEYPAD_BL_MASK) >>
 			 PM8058_DRV_KEYPAD_BL_SHIFT)
 		return LED_FULL;
@@ -110,7 +111,7 @@ static void led_lc_set(struct pmic8058_led_data *led, enum led_brightness value)
 	int rc, offset;
 	u8 level, tmp;
 
-    dbg("[LeD driver][leds-pmic8058.c] %s(value %d)\n ",__func__,value); //JCK 
+	dbg("[LeD driver][leds-pmic8058.c] %s(value %d)\n ",__func__,value); //JCK 
 	spin_lock_irqsave(&led->value_lock, flags);
 
 	level = (led->brightness << PM8058_DRV_LED_CTRL_SHIFT) &
@@ -212,7 +213,7 @@ int pm8058_set_led_current(enum pmic8058_leds id, unsigned mA)
 	struct pmic8058_led_data *led;
 	int brightness = 0;
 
-    dbg("[LeD driver][leds-pmic8058.c] %s(id %d ,  %dmA)\n ",__func__,id, mA); //JCK 
+	dbg("[LeD driver][leds-pmic8058.c] %s(id %d ,  %dmA)\n ",__func__,id, mA); //JCK 
 	if ((id < PMIC8058_ID_LED_KB_LIGHT) || (id > PMIC8058_ID_FLASH_LED_1)) {
 		pr_err("%s: invalid LED ID (%d) specified\n", __func__, id);
 		return -EINVAL;
@@ -310,8 +311,8 @@ static enum led_brightness pmic8058_led_get(struct led_classdev *led_cdev)
 static long leds_fops_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	dbg("leds_fops_ioctl : %d\n",cmd);
-    if ( cmd == 192 ) 
-        cmd =3;
+	if ( cmd == 192 ) 
+		cmd =3;
 	pmic8058_led_set(&led_data[PMIC8058_ID_LED_KB_LIGHT].cdev, cmd);
 	kp_bl_set(&led_data[PMIC8058_ID_LED_KB_LIGHT], (int)cmd);
 	return true;
@@ -416,7 +417,8 @@ static int pmic8058_led_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, led_data);
 	misc_register(&led_event);
-    dbg("[LeD driver][leds-pmic8058.c] %s()\n ",__func__); //JCK 
+	dbg("[LeD driver][leds-pmic8058.c] %s()\n ",__func__); //JCK 
+
 	return 0;
 
 err_reg_read:

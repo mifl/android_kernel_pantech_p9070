@@ -1441,6 +1441,7 @@ void gsdio_disconnect(struct gserial *gser, u8 portno)
 	gsdio_free_requests(gser->out, &port->read_queue);
 	gsdio_free_requests(gser->in, &port->write_pool);
 	}
+
 	port->rp_len = 0;
 	port->rq_len = 0;
 	port->wp_len = 0;

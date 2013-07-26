@@ -500,13 +500,13 @@ static char  *buf = NULL;
 void printcrash(const char *fmt, ...)
 {
 	static int printed_len = 0;
-      
+
 	va_list args;
-      
+
 	preempt_disable();
-      
+
 	if(!buf)
-            buf = (char *)smem_find(ID_DIAG_ERR_MSG,SZ_DIAG_ERR_MSG);
+		buf = (char *)smem_find(ID_DIAG_ERR_MSG,SZ_DIAG_ERR_MSG);
 	if(buf){
 		va_start(args,fmt);
 		printed_len +=vsnprintf(buf+printed_len,SZ_DIAG_ERR_MSG-printed_len,fmt,args);

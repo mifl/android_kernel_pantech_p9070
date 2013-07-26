@@ -12,17 +12,9 @@
  */
 
 /* pz1946 gb-copy file */
-//============================================
-/*20110522   CONFIG_PANTECH_MODEL_SEPERATE_FILE*/
-
 #ifdef CONFIG_MACH_MSM8X60_PRESTO
 #include "board-msm8x60-audio_presto.c"
 #else
-
-//============================================
-
-
-
 
 #include <linux/kernel.h>
 #include <linux/platform_device.h>
@@ -505,7 +497,7 @@ static int msm_snddev_enable_amic_power(void)
 #else
 		ret = pm8058_micbias_enable(OTHC_MICBIAS_2,
 				OTHC_SIGNAL_ALWAYS_ON);
-#endif       
+#endif
 		if (ret)
 			pr_err("%s: Enabling amic power failed\n", __func__);
 	}
@@ -900,7 +892,7 @@ static struct snddev_icodec_data snddev_ispkr_mic_data = {
 #else
 	.pamp_on = msm_snddev_enable_dmic_power,
 	.pamp_off = msm_snddev_disable_dmic_power,
-#endif	
+#endif
 };
 
 static struct platform_device msm_ispkr_mic_device = {
@@ -2769,4 +2761,4 @@ void __init msm_snddev_init(void)
 #endif
 }
 
-#endif /*CONFIG_MACH_MSM8X60_PRESTO */
+#endif /* CONFIG_MACH_MSM8X60_PRESTO */

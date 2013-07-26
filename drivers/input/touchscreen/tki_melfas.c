@@ -22,6 +22,7 @@
 #include <linux/miscdevice.h>
 #include <linux/slab.h>
 #include <linux/wakelock.h>
+#include <BOARD_REV.h>
 
 /* -------------------------------------------------------------------- */
 /* debug option */

@@ -53,6 +53,7 @@
 #define HS_REL_K		0xFF	/* key release */
 
 #define SW_HEADPHONE_INSERT_W_MIC 1 /* HS with mic */
+
 #ifdef FEATURE_SKY_CHG_LOGO  // p14682 kobj 110606
 #define HS_SKY_CHARGING_CABLE_REMOVED_K      0xE4
 #endif //FEATURE_SKY_CHG_LOGO
@@ -192,7 +193,7 @@ static const uint32_t hs_key_map[] = {
 	KEY(HS_HEADSET_SWITCH_2_K, KEY_VOLUMEUP),
 	KEY(HS_HEADSET_SWITCH_3_K, KEY_VOLUMEDOWN),
 #ifdef FEATURE_SKY_CHG_LOGO  // p14682 kobj 110606
-        KEY(HS_SKY_CHARGING_CABLE_REMOVED_K, KEY_BATTERY), //charging cable key
+	KEY(HS_SKY_CHARGING_CABLE_REMOVED_K, KEY_BATTERY), //charging cable key
 #endif
 	0
 };
@@ -289,7 +290,7 @@ static void report_hs_key(uint32_t key_code, uint32_t key_parm)
 	case KEY_VOLUMEUP:
 	case KEY_VOLUMEDOWN:
 #ifdef FEATURE_SKY_CHG_LOGO  // p14682 kobj 110606
-        case KEY_BATTERY:
+	case KEY_BATTERY:
 #endif
 		input_report_key(hs->ipdev, key, (key_code != HS_REL_K));
 		break;
@@ -649,9 +650,8 @@ static int __devinit hs_probe(struct platform_device *pdev)
 	input_set_capability(ipdev, EV_SW, SW_MICROPHONE_INSERT);
 	input_set_capability(ipdev, EV_KEY, KEY_POWER);
 	input_set_capability(ipdev, EV_KEY, KEY_END);
-
 #ifdef FEATURE_SKY_CHG_LOGO  // p14682 kobj 110606
-        input_set_capability(ipdev, EV_KEY, KEY_BATTERY);
+	input_set_capability(ipdev, EV_KEY, KEY_BATTERY);
 #endif
 
 	rc = input_register_device(ipdev);

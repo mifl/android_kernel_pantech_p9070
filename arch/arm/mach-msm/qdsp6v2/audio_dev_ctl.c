@@ -1387,11 +1387,11 @@ void broadcast_event(u32 evt_id, u32 dev_id, u64 session_id)
 	mutex_lock(&session_lock);
 
 #ifdef CONFIG_SKY_CHARGING  //kobj 110513
-        if(evt_id == AUDDEV_EVT_START_VOICE)
-                msm_charger_set_current_incall(true);
+	if(evt_id == AUDDEV_EVT_START_VOICE)
+		msm_charger_set_current_incall(true);
 
-        if(evt_id == AUDDEV_EVT_END_VOICE)
-                msm_charger_set_current_incall(false);
+	if(evt_id == AUDDEV_EVT_END_VOICE)
+		msm_charger_set_current_incall(false);
 #endif
 
 	if (evt_id == AUDDEV_EVT_VOICE_STATE_CHG)

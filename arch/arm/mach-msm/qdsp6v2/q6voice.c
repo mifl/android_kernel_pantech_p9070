@@ -59,60 +59,39 @@ static bool is_adsp_support_cvd(void)
 static int voice_send_enable_vocproc_cmd(struct voice_data *v);
 static int voice_send_netid_timing_cmd(struct voice_data *v);
 
-static bool is_voice_session(u16 session_id)
-{
-       return (session_id == common.voice[VOC_PATH_PASSIVE].session_id);
-}
-
-static bool is_voip_session(u16 session_id)
-{
-       return (session_id == common.voice[VOC_PATH_FULL].session_id);
-}
-
-static void *voice_get_apr_mvm(u16 session_id)
+static void *voice_get_apr_mvm(void)
 {
 	void *apr_mvm = NULL;
 
-	pr_err("%s: session_id = %d\n", __func__, session_id);
-
-        if ((is_voice_session(session_id)) &&
-               !(is_adsp_support_cvd())) {
-               pr_err("%s: Assigning modem mvm handle %x", __func__, (unsigned int)common.apr_mvm);
+	if (common.voc_path == VOC_PATH_PASSIVE &&
+		!(is_adsp_support_cvd()))
 		apr_mvm = common.apr_mvm;
-	}
-	else {
+	else
 		apr_mvm = common.apr_q6_mvm;
-        pr_err("%s: Assinging Q6 mvm handle %x",__func__, (unsigned int)common.apr_q6_mvm);
-	}
+
 	pr_debug("%s: apr_mvm 0x%x\n", __func__, (unsigned int)apr_mvm);
 
 	return apr_mvm;
 }
 
-static void voice_set_apr_mvm(u16 session_id, void *apr_mvm)
+static void voice_set_apr_mvm(void *apr_mvm)
 {
 	pr_debug("%s: apr_mvm 0x%x\n", __func__, (unsigned int)apr_mvm);
 
-     if ((is_voice_session(session_id)) &&
-               !(is_adsp_support_cvd())) {
-               pr_err("%s: Setting modem mvm with %x", __func__, (unsigned int)apr_mvm);
+	if (common.voc_path == VOC_PATH_PASSIVE &&
+		!(is_adsp_support_cvd()))
 		common.apr_mvm = apr_mvm;
-	 } 
-	 else {
-		pr_err("%s: Setting Q6 mvm with %x", __func__, (unsigned int)apr_mvm);
+	else
 		common.apr_q6_mvm = apr_mvm;
-	 }
 }
 
-static void *voice_get_apr_cvs(u16 session_id)
+static void *voice_get_apr_cvs(void)
 {
 	void *apr_cvs = NULL;
 
-     if ((is_voice_session(session_id)) &&
-               !(is_adsp_support_cvd())) {
-               pr_err("%s: Assigning modem cvs handle %x", __func__, (unsigned int)common.apr_cvs);
+	if (common.voc_path == VOC_PATH_PASSIVE &&
+		!(is_adsp_support_cvd()))
 		apr_cvs = common.apr_cvs;
-	}
 	else
 		apr_cvs = common.apr_q6_cvs;
 
@@ -121,31 +100,25 @@ static void *voice_get_apr_cvs(u16 session_id)
 	return apr_cvs;
 }
 
-static void voice_set_apr_cvs(u16 session_id, void *apr_cvs)
+static void voice_set_apr_cvs(void *apr_cvs)
 {
 	pr_debug("%s: apr_cvs 0x%x\n", __func__, (unsigned int)apr_cvs);
 
-       if ((is_voice_session(session_id)) &&
-               !(is_adsp_support_cvd())) {
-               pr_err("%s: Setting modem cvs with %x", __func__, (unsigned int)apr_cvs);
+	if (common.voc_path == VOC_PATH_PASSIVE &&
+		!(is_adsp_support_cvd()))
 		common.apr_cvs = apr_cvs;
-	}
-	else {
-		pr_err("%s: Setting Q6 cvs with %x", __func__, (unsigned int)apr_cvs);
+	else
 		common.apr_q6_cvs = apr_cvs;
-	}
 	rtac_set_voice_handle(RTAC_CVS, apr_cvs);
 }
 
-static void *voice_get_apr_cvp(u16 session_id)
+static void *voice_get_apr_cvp(void)
 {
 	void *apr_cvp = NULL;
 
-       if ((is_voice_session(session_id)) &&
-               !(is_adsp_support_cvd())) {
-               pr_err("%s: Assigning modem cvp handle %x", __func__, (unsigned int)common.apr_cvp);
+	if (common.voc_path == VOC_PATH_PASSIVE &&
+		!(is_adsp_support_cvd()))
 		apr_cvp = common.apr_cvp;
-	}
 	else
 		apr_cvp = common.apr_q6_cvp;
 
@@ -154,19 +127,15 @@ static void *voice_get_apr_cvp(u16 session_id)
 	return apr_cvp;
 }
 
-static void voice_set_apr_cvp(u16 session_id, void *apr_cvp)
+static void voice_set_apr_cvp(void *apr_cvp)
 {
 	pr_debug("%s: apr_cvp 0x%x\n", __func__, (unsigned int)apr_cvp);
 
-       if ((is_voice_session(session_id)) &&
-               !(is_adsp_support_cvd())) {
-               pr_err("%s: Setting modem cvp with %x", __func__, (unsigned int)apr_cvp);
+	if (common.voc_path == VOC_PATH_PASSIVE &&
+		!(is_adsp_support_cvd()))
 		common.apr_cvp = apr_cvp;
-	}
-	else {
-		pr_err("%s: Setting Q6 cvp with %x", __func__, (unsigned int)apr_cvp);
+	else
 		common.apr_q6_cvp = apr_cvp;
-	}
 	rtac_set_voice_handle(RTAC_CVP, apr_cvp);
 }
 
@@ -260,6 +229,16 @@ static struct voice_data *voice_get_session(u16 session_id)
 	return v;
 }
 
+static bool is_voice_session(u16 session_id)
+{
+	return (session_id == common.voice[VOC_PATH_PASSIVE].session_id);
+}
+
+static bool is_voip_session(u16 session_id)
+{
+	return (session_id == common.voice[VOC_PATH_FULL].session_id);
+}
+
 static void voice_auddev_cb_function(u32 evt_id,
 			union auddev_evt_data *evt_payload,
 			void *private_data);
@@ -268,7 +247,7 @@ static int32_t modem_mvm_callback(struct apr_client_data *data, void *priv);
 static int32_t modem_cvs_callback(struct apr_client_data *data, void *priv);
 static int32_t modem_cvp_callback(struct apr_client_data *data, void *priv);
 
-static int voice_apr_register(u16 session_id)
+static int voice_apr_register(void)
 {
 	int rc = 0;
 	void *apr_mvm;
@@ -282,23 +261,22 @@ static int voice_apr_register(u16 session_id)
 
 	mutex_lock(&common.common_lock);
 
-       apr_mvm = voice_get_apr_mvm(session_id);
-       apr_cvs = voice_get_apr_cvs(session_id);
-       apr_cvp = voice_get_apr_cvp(session_id);
+	apr_mvm = voice_get_apr_mvm();
+	apr_cvs = voice_get_apr_cvs();
+	apr_cvp = voice_get_apr_cvp();
 
-	pr_err("into voice_apr_register_callback\n");
+
+	pr_debug("into voice_apr_register_callback\n");
 	/* register callback to APR */
 	if (apr_mvm == NULL) {
 		pr_debug("start to register MVM callback\n");
 
-		if ((is_voice_session(session_id)) &&
+		if (common.voc_path == VOC_PATH_PASSIVE &&
 			!(is_adsp_support_cvd())) {
-			pr_err("Registering modem mvm");
 			apr_mvm = apr_register("MODEM", "MVM",
 					       modem_mvm_callback, 0xFFFFFFFF,
 					       &common);
 		} else {
-			pr_err("Registering Q6 mvm");
 			apr_mvm = apr_register("ADSP", "MVM",
 					       modem_mvm_callback, 0xFFFFFFFF,
 					       &common);
@@ -311,20 +289,18 @@ static int voice_apr_register(u16 session_id)
 			goto done;
 		}
 
-		voice_set_apr_mvm(session_id, apr_mvm);
+		voice_set_apr_mvm(apr_mvm);
 	}
 
 	if (apr_cvs == NULL) {
 		pr_debug("start to register CVS callback\n");
 
-               if ((is_voice_session(session_id)) &&
+		if (common.voc_path == VOC_PATH_PASSIVE &&
 			!(is_adsp_support_cvd())) {
-                       pr_err("Registering modem cvs");
 			apr_cvs = apr_register("MODEM", "CVS",
 					       modem_cvs_callback, 0xFFFFFFFF,
 					       &common);
 		} else {
-                       pr_err("Registering Q6 cvs");
 			apr_cvs = apr_register("ADSP", "CVS",
 					       modem_cvs_callback, 0xFFFFFFFF,
 					       &common);
@@ -337,20 +313,18 @@ static int voice_apr_register(u16 session_id)
 			goto err;
 		}
 
-               voice_set_apr_cvs(session_id, apr_cvs);
-}
+		voice_set_apr_cvs(apr_cvs);
+	}
 
 	if (apr_cvp == NULL) {
 		pr_debug("start to register CVP callback\n");
 
-               if ((is_voice_session(session_id)) &&
+		if (common.voc_path == VOC_PATH_PASSIVE &&
 			!(is_adsp_support_cvd())) {
-                       pr_err("Registering modem cvp");
 			apr_cvp = apr_register("MODEM", "CVP",
 					       modem_cvp_callback, 0xFFFFFFFF,
 					       &common);
 		} else {
-                       pr_err("Registering Q6 cvp");
 			apr_cvp = apr_register("ADSP", "CVP",
 					       modem_cvp_callback, 0xFFFFFFFF,
 					       &common);
@@ -363,7 +337,7 @@ static int voice_apr_register(u16 session_id)
 			goto err1;
 		}
 
-               voice_set_apr_cvp(session_id, apr_cvp);
+		voice_set_apr_cvp(apr_cvp);
 	}
 
 	mutex_unlock(&common.common_lock);
@@ -373,11 +347,12 @@ static int voice_apr_register(u16 session_id)
 err1:
 	apr_deregister(apr_cvs);
 	apr_cvs = NULL;
-       voice_set_apr_cvs(session_id, apr_cvs);
+	voice_set_apr_cvs(apr_cvs);
 err:
 	apr_deregister(apr_mvm);
 	apr_mvm = NULL;
-       voice_set_apr_mvm(session_id, apr_mvm);
+	voice_set_apr_mvm(apr_mvm);
+
 done:
 	mutex_unlock(&common.common_lock);
 
@@ -391,9 +366,9 @@ static int voice_create_mvm_cvs_session(struct voice_data *v)
 	struct cvs_create_passive_ctl_session_cmd cvs_session_cmd;
 	struct cvs_create_full_ctl_session_cmd cvs_full_ctl_cmd;
 	struct mvm_attach_stream_cmd attach_stream_cmd;
-    void *apr_mvm = voice_get_apr_mvm(v->session_id);
-    void *apr_cvs = voice_get_apr_cvs(v->session_id);
-    void *apr_cvp = voice_get_apr_cvp(v->session_id);
+	void *apr_mvm = voice_get_apr_mvm();
+	void *apr_cvs = voice_get_apr_cvs();
+	void *apr_cvp = voice_get_apr_cvp();
 	u16 mvm_handle = voice_get_mvm_handle(v);
 	u16 cvs_handle = voice_get_cvs_handle(v);
 	u16 cvp_handle = voice_get_cvp_handle(v);
@@ -606,15 +581,15 @@ static int voice_create_mvm_cvs_session(struct voice_data *v)
 fail:
 	apr_deregister(apr_mvm);
 	apr_mvm = NULL;
-    voice_set_apr_mvm(v->session_id, apr_mvm);
+	voice_set_apr_mvm(apr_mvm);
 
 	apr_deregister(apr_cvs);
 	apr_cvs = NULL;
-    voice_set_apr_cvs(v->session_id, apr_cvs);
+	voice_set_apr_cvs(apr_cvs);
 
 	apr_deregister(apr_cvp);
 	apr_cvp = NULL;
-    voice_set_apr_cvp(v->session_id, apr_cvp);
+	voice_set_apr_cvp(apr_cvp);
 
 	cvp_handle = 0;
 	voice_set_cvp_handle(v, cvp_handle);
@@ -631,8 +606,8 @@ static int voice_destroy_mvm_cvs_session(struct voice_data *v)
 	struct mvm_detach_stream_cmd detach_stream;
 	struct apr_hdr mvm_destroy;
 	struct apr_hdr cvs_destroy;
-    void *apr_mvm = voice_get_apr_mvm(v->session_id);
-    void *apr_cvs = voice_get_apr_cvs(v->session_id);
+	void *apr_mvm = voice_get_apr_mvm();
+	void *apr_cvs = voice_get_apr_cvs();
 	u16 mvm_handle = voice_get_mvm_handle(v);
 	u16 cvs_handle = voice_get_cvs_handle(v);
 
@@ -751,7 +726,7 @@ static int voice_send_tty_mode_to_modem(struct voice_data *v)
 	int tty_mode = 0;
 	int ret = 0;
 	struct mvm_set_tty_mode_cmd mvm_tty_mode_cmd;
-    void *apr_mvm = voice_get_apr_mvm(v->session_id);
+	void *apr_mvm = voice_get_apr_mvm();
 	u16 mvm_handle = voice_get_mvm_handle(v);
 
 	dev_rx_info = audio_dev_ctrl_find_dev(v->dev_rx.dev_id);
@@ -821,7 +796,7 @@ static int voice_send_cvs_cal_to_modem(struct voice_data *v)
 	uint32_t *cal_data_per_network;
 	int index = 0;
 	int ret = 0;
-    void *apr_cvs = voice_get_apr_cvs(v->session_id);
+	void *apr_cvs = voice_get_apr_cvs();
 	u16 cvs_handle = voice_get_cvs_handle(v);
 
 	/* fill the header */
@@ -899,7 +874,7 @@ static int voice_send_cvp_cal_to_modem(struct voice_data *v)
 	uint32_t *cal_data_per_network;
 	int index = 0;
 	int ret = 0;
-    void *apr_cvp = voice_get_apr_cvp(v->session_id);
+	void *apr_cvp = voice_get_apr_cvp();
 	u16 cvp_handle = voice_get_cvp_handle(v);
 
 
@@ -948,7 +923,7 @@ static int voice_send_cvp_cal_to_modem(struct voice_data *v)
 			cal_data_per_network, cal_size_per_network);
 		pr_debug("Send cvp cal\n");
 		v->cvp_state = CMD_STATUS_FAIL;
-		 pr_info("%s: CVP calib\n", __func__);
+		pr_info("%s: CVP calib\n", __func__);
 		ret = apr_send_pkt(apr_cvp, cmd_buf);
 		if (ret < 0) {
 			pr_err("Fail: sending cvp cal, idx=%d\n", index);
@@ -977,7 +952,7 @@ static int voice_send_cvp_vol_tbl_to_modem(struct voice_data *v)
 	uint32_t *cal_data_per_network;
 	int index = 0;
 	int ret = 0;
-    void *apr_cvp = voice_get_apr_cvp(v->session_id);
+	void *apr_cvp = voice_get_apr_cvp();
 	u16 cvp_handle = voice_get_cvp_handle(v);
 
 
@@ -1047,7 +1022,7 @@ done:
 static int voice_set_dtx(struct voice_data *v)
 {
 	int ret = 0;
-    void *apr_cvs = voice_get_apr_cvs(v->session_id);
+	void *apr_cvs = voice_get_apr_cvs();
 	u16 cvs_handle = voice_get_cvs_handle(v);
 
 	/* Set DTX */
@@ -1091,7 +1066,7 @@ done:
 static int voice_config_cvs_vocoder(struct voice_data *v)
 {
 	int ret = 0;
-    void *apr_cvs = voice_get_apr_cvs(v->session_id);
+	void *apr_cvs = voice_get_apr_cvs();
 	u16 cvs_handle = voice_get_cvs_handle(v);
 
 	/* Set media type. */
@@ -1294,7 +1269,7 @@ static int voice_send_start_voice_cmd(struct voice_data *v)
 {
 	struct apr_hdr mvm_start_voice_cmd;
 	int ret = 0;
-    void *apr_mvm = voice_get_apr_mvm(v->session_id);
+	void *apr_mvm = voice_get_apr_mvm();
 	u16 mvm_handle = voice_get_mvm_handle(v);
 
 	mvm_start_voice_cmd.hdr_field = APR_HDR_FIELD(APR_MSG_TYPE_SEQ_CMD,
@@ -1331,7 +1306,7 @@ static int voice_disable_vocproc(struct voice_data *v)
 {
 	struct apr_hdr cvp_disable_cmd;
 	int ret = 0;
-    void *apr_cvp = voice_get_apr_cvp(v->session_id);
+	void *apr_cvp = voice_get_apr_cvp();
 	u16 cvp_handle = voice_get_cvp_handle(v);
 
 	/* disable vocproc and wait for respose */
@@ -1371,7 +1346,7 @@ static int voice_set_device(struct voice_data *v)
 	struct cvp_set_device_cmd  cvp_setdev_cmd;
 	struct msm_snddev_info *dev_tx_info;
 	int ret = 0;
-    void *apr_cvp = voice_get_apr_cvp(v->session_id);
+	void *apr_cvp = voice_get_apr_cvp();
 	u16 cvp_handle = voice_get_cvp_handle(v);
 
 
@@ -1463,7 +1438,7 @@ static int voice_send_stop_voice_cmd(struct voice_data *v)
 {
 	struct apr_hdr mvm_stop_voice_cmd;
 	int ret = 0;
-    void *apr_mvm = voice_get_apr_mvm(v->session_id);
+	void *apr_mvm = voice_get_apr_mvm();
 	u16 mvm_handle = voice_get_mvm_handle(v);
 
 	mvm_stop_voice_cmd.hdr_field = APR_HDR_FIELD(APR_MSG_TYPE_SEQ_CMD,
@@ -1501,7 +1476,8 @@ static int voice_setup_modem_voice(struct voice_data *v)
 	struct cvp_create_full_ctl_session_cmd cvp_session_cmd;
 	int ret = 0;
 	struct msm_snddev_info *dev_tx_info;
-    void *apr_cvp = voice_get_apr_cvp(v->session_id);
+	void *apr_cvp = voice_get_apr_cvp();
+
 	/* create cvp session and wait for response */
 	cvp_session_cmd.hdr.hdr_field = APR_HDR_FIELD(APR_MSG_TYPE_SEQ_CMD,
 				APR_HDR_LEN(APR_HDR_SIZE), APR_PKT_VER);
@@ -1586,7 +1562,8 @@ static int voice_send_enable_vocproc_cmd(struct voice_data *v)
 	struct apr_hdr cvp_enable_cmd;
 
 	u16 cvp_handle = voice_get_cvp_handle(v);
-    void *apr_cvp = voice_get_apr_cvp(v->session_id);
+	void *apr_cvp = voice_get_apr_cvp();
+
 	/* enable vocproc and wait for respose */
 	cvp_enable_cmd.hdr_field = APR_HDR_FIELD(APR_MSG_TYPE_SEQ_CMD,
 				APR_HDR_LEN(APR_HDR_SIZE), APR_PKT_VER);
@@ -1621,7 +1598,7 @@ fail:
 static int voice_send_netid_timing_cmd(struct voice_data *v)
 {
 	int ret = 0;
-    void *apr_mvm = voice_get_apr_mvm(v->session_id);
+	void *apr_mvm = voice_get_apr_mvm();
 	struct mvm_set_network_cmd mvm_set_network;
 	struct mvm_set_voice_timing_cmd mvm_set_voice_timing;
 	u16 mvm_handle = voice_get_mvm_handle(v);
@@ -1704,7 +1681,7 @@ static int voice_attach_vocproc(struct voice_data *v)
 {
 	int ret = 0;
 	struct mvm_attach_vocproc_cmd mvm_a_vocproc_cmd;
-    void *apr_mvm = voice_get_apr_mvm(v->session_id);
+	void *apr_mvm = voice_get_apr_mvm();
 	u16 mvm_handle = voice_get_mvm_handle(v);
 	u16 cvp_handle = voice_get_cvp_handle(v);
 
@@ -1758,8 +1735,8 @@ static int voice_destroy_modem_voice(struct voice_data *v)
 	struct mvm_detach_vocproc_cmd mvm_d_vocproc_cmd;
 	struct apr_hdr cvp_destroy_session_cmd;
 	int ret = 0;
-    void *apr_mvm = voice_get_apr_mvm(v->session_id);
-    void *apr_cvp = voice_get_apr_cvp(v->session_id);
+	void *apr_mvm = voice_get_apr_mvm();
+	void *apr_cvp = voice_get_apr_cvp();
 	u16 mvm_handle = voice_get_mvm_handle(v);
 	u16 cvp_handle = voice_get_cvp_handle(v);
 
@@ -1829,7 +1806,7 @@ static int voice_send_mute_cmd_to_modem(struct voice_data *v)
 {
 	struct cvs_set_mute_cmd cvs_mute_cmd;
 	int ret = 0;
-    void *apr_cvs = voice_get_apr_cvs(v->session_id);
+	void *apr_cvs = voice_get_apr_cvs();
 	u16 cvs_handle = voice_get_cvs_handle(v);
 
 	/* send mute/unmute to cvs */
@@ -1865,7 +1842,7 @@ static int voice_send_vol_index_to_modem(struct voice_data *v)
 {
 	struct cvp_set_rx_volume_index_cmd cvp_vol_cmd;
 	int ret = 0;
-    void *apr_cvp = voice_get_apr_cvp(v->session_id);
+	void *apr_cvp = voice_get_apr_cvp();
 	u16 cvp_handle = voice_get_cvp_handle(v);
 
 	/* send volume index to cvp */
@@ -1898,7 +1875,7 @@ static int voice_send_vol_index_to_modem(struct voice_data *v)
 static int voice_cvs_start_record(struct voice_data *v, uint32_t rec_mode)
 {
 	int ret = 0;
-    void *apr_cvs = voice_get_apr_cvs(v->session_id);
+	void *apr_cvs = voice_get_apr_cvs();
 	u16 cvs_handle = voice_get_cvs_handle(v);
 	struct cvs_start_record_cmd cvs_start_record;
 
@@ -1960,7 +1937,7 @@ fail:
 static int voice_cvs_stop_record(struct voice_data *v)
 {
 	int ret = 0;
-    void *apr_cvs = voice_get_apr_cvs(v->session_id);
+	void *apr_cvs = voice_get_apr_cvs();
 	u16 cvs_handle = voice_get_cvs_handle(v);
 	struct apr_hdr cvs_stop_record;
 
@@ -2033,7 +2010,7 @@ int voice_start_record(uint32_t rec_mode, uint32_t set)
 static int voice_cvs_start_playback(struct voice_data *v)
 {
 	int ret = 0;
-    void *apr_cvs = voice_get_apr_cvs(v->session_id);
+	void *apr_cvs = voice_get_apr_cvs();
 	u16 cvs_handle = voice_get_cvs_handle(v);
 	struct apr_hdr cvs_start_playback;
 
@@ -2078,7 +2055,7 @@ fail:
 static int voice_cvs_stop_playback(struct voice_data *v)
 {
 	int ret = 0;
-    void *apr_cvs = voice_get_apr_cvs(v->session_id);
+	void *apr_cvs = voice_get_apr_cvs();
 	u16 cvs_handle = voice_get_cvs_handle(v);
 	struct apr_hdr cvs_stop_playback;
 
@@ -2191,7 +2168,7 @@ static void voice_auddev_cb_function(u32 evt_id,
 			v->v_call_status = VOICE_CALL_START;
 			if ((v->dev_rx.enabled == VOICE_DEV_ENABLED)
 				&& (v->dev_tx.enabled == VOICE_DEV_ENABLED)) {
-                rc = voice_apr_register(evt_payload->voice_session_id);
+				rc = voice_apr_register();
 				if (rc < 0) {
 					pr_err("%s: voice apr registration"
 						"failed\n", __func__);
@@ -2203,7 +2180,7 @@ static void voice_auddev_cb_function(u32 evt_id,
 					pr_err("%s: create mvm-cvs failed\n",
 								__func__);
 					msleep(100);
-                    rc = voice_apr_register(evt_payload->voice_session_id);
+					rc = voice_apr_register();
 					if (rc < 0) {
 						mutex_unlock(&v->lock);
 						pr_err("%s: voice apr regn"
@@ -2337,7 +2314,7 @@ static void voice_auddev_cb_function(u32 evt_id,
 				if ((v->dev_rx.enabled == VOICE_DEV_ENABLED) &&
 				    (v->dev_tx.enabled == VOICE_DEV_ENABLED) &&
 				    (v->v_call_status == VOICE_CALL_START)) {
-                    rc = voice_apr_register(evt_payload->voice_session_id);
+					rc = voice_apr_register();
 					if (rc < 0) {
 						pr_err("%s: voice apr"
 						       "registration failed\n",
@@ -2477,7 +2454,7 @@ int voice_set_voc_path_full(uint32_t set)
 
 	if (set)
 		common.voc_path = VOC_PATH_FULL;
-	else 
+	else
 		common.voc_path = VOC_PATH_PASSIVE;
 
 	mutex_unlock(&common.common_lock);
@@ -2800,7 +2777,7 @@ static int32_t modem_cvs_callback(struct apr_client_data *data, void *priv)
 			send_dec_buf.hdr.opcode =
 					VSS_ISTREAM_EVT_SEND_DEC_BUFFER;
 
-            ret = apr_send_pkt(voice_get_apr_cvs(v->session_id),
+			ret = apr_send_pkt(voice_get_apr_cvs(),
 					   (uint32_t *) &send_dec_buf);
 			if (ret < 0) {
 				pr_err("%s: Error %d sending DEC_BUF\n",

@@ -831,7 +831,6 @@ static int frmnet_bind(struct usb_configuration *c, struct usb_function *f)
 	int				ret = -ENODEV;
 
 #ifdef CONFIG_ANDROID_PANTECH_USB
-//	if((pantech_usb_carrier != CARRIER_QUALCOMM) && b_pantech_usb_module){
 	if(pantech_usb_carrier != CARRIER_QUALCOMM){
 		rmnet_interface_desc.bInterfaceClass =      USB_CLASS_VENDOR_SPEC;
 		rmnet_interface_desc.bInterfaceSubClass =   0xF0;

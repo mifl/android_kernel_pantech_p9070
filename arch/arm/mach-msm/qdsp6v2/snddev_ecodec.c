@@ -173,8 +173,7 @@ static int snddev_ecodec_open(struct msm_snddev_info *dev_info)
 	struct snddev_ecodec_drv_state *drv = &snddev_ecodec_drv;
 	union afe_port_config afe_config;
 #ifdef CONFIG_PANTECH_AUDIO_PRESTO_AUDIENCE2020 // jmlee	
-       struct snddev_ecodec_state *ecodec;
-       //int i;
+	struct snddev_ecodec_state *ecodec;
 #endif
 
 	pr_debug("%s\n", __func__);
@@ -239,21 +238,14 @@ static int snddev_ecodec_open(struct msm_snddev_info *dev_info)
 
 #ifdef CONFIG_PANTECH_AUDIO_PRESTO_AUDIENCE2020 // jmlee	
 	/* audience enable */
-       ecodec = dev_info->private_data;
+	ecodec = dev_info->private_data;
 	if ((ecodec->data->pamp_on) && (!ecodec_audience_enable))
 	{
-	     ecodec->data->pamp_on();
-	     ecodec_audience_enable = 1;
-
-		/* Enable mic bias */
-		//for (i = 0; i < ecodec->data->pmctl_id_sz; i++) {
-		//	pmic_hsed_enable(ecodec->data->pmctl_id[i],
-		//		 PM_HSED_ENABLE_PWM_TCXO);
-		//}
-
+		ecodec->data->pamp_on();
+		ecodec_audience_enable = 1;
 	}
 
-#endif	
+#endif
 
 	return 0;
 
@@ -271,8 +263,7 @@ int snddev_ecodec_close(struct msm_snddev_info *dev_info)
 {
 	struct snddev_ecodec_drv_state *drv = &snddev_ecodec_drv;
 #ifdef CONFIG_PANTECH_AUDIO_PRESTO_AUDIENCE2020 // jmlee	
-	//int i;
-       struct snddev_ecodec_state *ecodec;
+	struct snddev_ecodec_state *ecodec;
 #endif
 
 	pr_debug("%s: closing %s\n", __func__, dev_info->name);
@@ -288,17 +279,11 @@ int snddev_ecodec_close(struct msm_snddev_info *dev_info)
 
 #ifdef CONFIG_PANTECH_AUDIO_PRESTO_AUDIENCE2020 // jmlee	
 	/* audience disable */
-       ecodec = dev_info->private_data;
+	ecodec = dev_info->private_data;
 	if (ecodec->data->pamp_off && (ecodec_audience_enable))
 	{
 		ecodec->data->pamp_off();
-              ecodec_audience_enable = 0;
-
-		/* Disable mic bias */   // 20110224 jhsong
-		//for (i = 0; i < ecodec->data->pmctl_id_sz; i++) {
-		//	pmic_hsed_enable(ecodec->data->pmctl_id[i],
-		//		 PM_HSED_ENABLE_OFF);
-		//}
+		ecodec_audience_enable = 0;
 	}
 #endif	
 

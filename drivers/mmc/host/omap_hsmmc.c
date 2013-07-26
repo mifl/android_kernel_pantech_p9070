@@ -2162,10 +2162,10 @@ static int __init omap_hsmmc_probe(struct platform_device *pdev)
 
 #ifndef SUPPRESS_MMC_CAP_ERASE
 	mmc->caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED |
-           MMC_CAP_WAIT_WHILE_BUSY | MMC_CAP_ERASE;
+		     MMC_CAP_WAIT_WHILE_BUSY | MMC_CAP_ERASE;
 #else
 	mmc->caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED |
-           MMC_CAP_WAIT_WHILE_BUSY;
+		     MMC_CAP_WAIT_WHILE_BUSY;
 #endif /* SUPPRESS_MMC_CAP_ERASE */
 
 	mmc->caps |= mmc_slot(host).caps;
