@@ -76,6 +76,8 @@
 #define MSM_MMC_BUS_VOTING_DELAY	200 /* msecs */
 #define SUPPRESS_MMC_CAP_ERASE
 
+#define MSM_MMC_BUS_VOTING_DELAY	200 /* msecs */
+
 #if defined(CONFIG_DEBUG_FS)
 static void msmsdcc_dbg_createhost(struct msmsdcc_host *);
 static struct dentry *debugfs_dir;
@@ -3218,18 +3220,19 @@ static int msmsdcc_enable(struct mmc_host *mmc)
 	msmsdcc_pm_qos_update_latency(host, 1);
 
 	if (mmc->card && mmc_card_sdio(mmc->card)) {
+		rc = 0;
 		goto out;
 	}
 
-	rc = msmsdcc_setup_clocks(host, true);
-	 if (rc) {
-		msmsdcc_pm_qos_update_latency(host, 0);
-		return rc;
+	spin_lock_irqsave(&host->lock, flags);
+	if (!host->clks_on) {
+		msmsdcc_setup_clocks(host, true);
+		host->clks_on = 1;
 	}
 
 out:
 	msmsdcc_msm_bus_cancel_work_and_set_vote(host, &mmc->ios);
-	return rc;
+	return 0;
 }
 
 static int msmsdcc_disable(struct mmc_host *mmc, int lazy)
@@ -3248,9 +3251,10 @@ static int msmsdcc_disable(struct mmc_host *mmc, int lazy)
 		msmsdcc_pm_qos_update_latency(host, 1);
 		return rc;
 	}
+	spin_unlock_irqrestore(&host->lock, flags);
 out:
 	msmsdcc_msm_bus_queue_work(host);
-	return rc;
+	return 0;
 }
 #endif
 
@@ -4417,12 +4421,12 @@ show_sdcc_to_mem_max_bus_bw(struct device *dev, struct device_attribute *attr,
 	struct msmsdcc_host *host = mmc_priv(mmc);
 
 	return snprintf(buf, PAGE_SIZE, "%u\n",
-			host->msm_bus_vote.is_max_bw_needed);
+		host->msm_bus_vote.is_max_bw_needed);
 }
 
 static ssize_t
 store_sdcc_to_mem_max_bus_bw(struct device *dev, struct device_attribute *attr,
-		const char *buf, size_t count)
+			const char *buf, size_t count)
 {
 	struct mmc_host *mmc = dev_get_drvdata(dev);
 	struct msmsdcc_host *host = mmc_priv(mmc);
@@ -4501,9 +4505,8 @@ static void msmsdcc_print_regs(const char *name, void __iomem *base,
 
 	if (!base)
 		return;
-
-	pr_err("===== %s: Register Dumps @phys_base=0x%x, @virt_base=0x%x"
-		" =====\n", name, phys_base, (u32)base);
+	pr_err("===== %s: Register Dumps @base=0x%x =====\n",
+		name, (u32)base);
 	for (i = 0; i < no_of_regs; i = i + 4) {
 		pr_err("Reg=0x%.2x: 0x%.8x, 0x%.8x, 0x%.8x, 0x%.8x\n", i*4,
 			(u32)readl_relaxed(base + i*4),
@@ -4972,7 +4975,7 @@ msmsdcc_probe(struct platform_device *pdev)
 
 	if (host->msm_bus_vote.client_handle)
 		INIT_DELAYED_WORK(&host->msm_bus_vote.vote_work,
-				  msmsdcc_msm_bus_work);
+			msmsdcc_msm_bus_work);
 
 	ret = msmsdcc_vreg_init(host, true);
 	if (ret) {
@@ -5245,7 +5248,6 @@ msmsdcc_probe(struct platform_device *pdev)
 	ret = device_create_file(&pdev->dev, &host->max_bus_bw);
 	if (ret)
 		goto platform_irq_free;
-
 	if (!plat->status_irq) {
 		host->polling.show = show_polling;
 		host->polling.store = store_polling;
@@ -5500,7 +5502,6 @@ msmsdcc_runtime_suspend(struct device *dev)
 		rc = 0;
 		goto out;
 	}
-
 	pr_debug("%s: %s: start\n", mmc_hostname(mmc), __func__);
 	if (mmc) {
 		host->sdcc_suspending = 1;

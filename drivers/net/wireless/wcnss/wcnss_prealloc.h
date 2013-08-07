@@ -8,14 +8,12 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
+#ifndef _WCNSS_PRE_ALLOC_H_
+#define _WCNSS_PRE_ALLOC_H_
 
-#ifndef MIPI_ORISE_H
-#define MIPI_ORISE_H
+int wcnss_prealloc_init(void);
+void wcnss_prealloc_deinit(void);
 
-int mipi_orise_device_register(struct msm_panel_info *pinfo,
-					u32 channel, u32 panel);
-
-#endif  /* MIPI_ORISE_H */
+#endif/* _WCNSS_PRE_ALLOC_H_ */

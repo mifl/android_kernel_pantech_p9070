@@ -269,8 +269,7 @@ void diag_clear_reg(int proc_num)
 }
 
 void diag_add_reg(int j, struct bindpkt_params *params,
-					  int *success,
-					  unsigned int *count_entries)
+				  int *success, unsigned int *count_entries)
 {
 	*success = 1;
 	driver->table[j].cmd_code = params->cmd_code;

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/* Copyright (c) 2008-2010, The Linux Foundation. All rights reserved.
-=======
-/* Copyright (c) 2008-2010, 2012 Code Aurora Forum. All rights reserved.
->>>>>>> M8960AAAAANLYA100713N
+/* Copyright (c) 2008-2010, 2012 The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and

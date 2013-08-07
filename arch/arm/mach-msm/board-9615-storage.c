@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -187,7 +187,6 @@ static struct mmc_platform_data sdc1_data = {
 	.xpc_cap	= 1,
 	.uhs_caps	= (MMC_CAP_UHS_SDR12 | MMC_CAP_UHS_SDR25 |
 			   MMC_CAP_MAX_CURRENT_400),
-	.mpm_sdiowakeup_int = MSM_MPM_PIN_SDC1_DAT1,
 	.msm_bus_voting_data = &sps_to_ddr_bus_voting_data,
 };
 static struct mmc_platform_data *msm9615_sdc1_pdata = &sdc1_data;
@@ -208,6 +207,7 @@ static struct mmc_platform_data sdc2_data = {
 	.pclk_src_dfab	= 1,
 	.pin_data	= &mmc_slot_pin_data[SDCC2],
 	.sdiowakeup_irq = MSM_GPIO_TO_INT(GPIO_SDC2_DAT1_WAKEUP),
+#endif
 	.msm_bus_voting_data = &sps_to_ddr_bus_voting_data,
 };
 static struct mmc_platform_data *msm9615_sdc2_pdata = &sdc2_data;

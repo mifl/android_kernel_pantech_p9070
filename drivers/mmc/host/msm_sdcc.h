@@ -410,7 +410,7 @@ struct msmsdcc_host {
 	bool sdcc_suspended;
 	bool sdio_wakeupirq_disabled;
 	bool pending_resume;
-	unsigned int idle_tout_ms;			/* Timeout in msecs */
+	unsigned int idle_tout_ms;		/* Timeout in msecs */
 	struct msmsdcc_msm_bus_vote msm_bus_vote;
 	struct device_attribute	max_bus_bw;
 	struct device_attribute	polling;
