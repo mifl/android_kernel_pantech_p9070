@@ -65,14 +65,11 @@ static bool b_pantech_usb_module = false;
 #include "epautoconf.c"
 #include "composite.c"
 
-<<<<<<< HEAD
 #include "f_diag.c"
 #include "f_rmnet_smd.c"
 #include "f_rmnet_sdio.c"
 #include "f_rmnet_smd_sdio.c"
 #include "f_rmnet.c"
-=======
->>>>>>> parent of 1f0627d... USB: gadget: f_audio_source: New gadget driver for audio output
 #include "f_mass_storage.c"
 #include "u_serial.c"
 #include "u_sdio.c"
@@ -1108,13 +1105,10 @@ static struct android_usb_function *supported_functions[] = {
 	&rndis_function,
 	&mass_storage_function,
 	&accessory_function,
-<<<<<<< HEAD
 #ifdef CONFIG_ANDROID_PANTECH_USB_MANAGER
 	&usbnet_function,
 	&pantech_obex_function,
 #endif
-=======
->>>>>>> parent of 1f0627d... USB: gadget: f_audio_source: New gadget driver for audio output
 	NULL
 };
 
