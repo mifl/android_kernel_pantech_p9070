@@ -59,3 +59,4 @@ obj-$(CONFIG_PANTECH_CAMERA_MT9V113) += mt9v113_r2.o mt9v113_cfg.o
 obj-$(CONFIG_PANTECH_CAMERA) += sensor_i2c.o sensor_ctrl.o
 obj-$(CONFIG_PANTECH_CAMERA_TUNER) += ptune_parser.o
 obj-$(CONFIG_FB_MSM_WRITEBACK_MSM_PANEL) += wfd/
+obj-$(CONFIG_MSM_V4L2_VIDEO_OVERLAY_DEVICE) += msm_v4l2_video.o

@@ -628,20 +628,19 @@ static int msm_mctl_open(struct msm_cam_media_controller *p_mctl,
 
 		/* then sensor - move sub dev later*/
 		rc = v4l2_subdev_call(p_mctl->sensor_sdev, core, s_power, 1);
-		if (rc < 0) {
-			pr_err("%s: sensor power up failed: %d\n",
-				__func__, rc);
-			goto sensor_sdev_failed;
-		}
 
+		if (rc < 0) {
+			pr_err("%s: isp init failed: %d\n", __func__, rc);
+			goto msm_open_done;
+		}
 		if (sync->actctrl.a_power_up)
 			rc = sync->actctrl.a_power_up(
 				sync->sdata->actuator_info);
+
 		if (rc < 0) {
 			pr_err("%s: act power failed:%d\n", __func__, rc);
-			goto act_power_up_failed;
+			goto msm_open_done;
 		}
-
 		if (camdev->is_csiphy) {
 			rc = v4l2_subdev_call(p_mctl->csiphy_sdev, core, ioctl,
 				VIDIOC_MSM_CSIPHY_INIT, NULL);
@@ -732,10 +731,8 @@ csiphy_init_failed:
 	if (p_mctl->sync.actctrl.a_power_down)
 		p_mctl->sync.actctrl.a_power_down(
 			p_mctl->sync.sdata->actuator_info);
-act_power_up_failed:
-	v4l2_subdev_call(p_mctl->sensor_sdev, core, s_power, 0);
-sensor_sdev_failed:
 register_sdev_failed:
+msm_open_done:
 	wake_unlock(&p_mctl->sync.wake_lock);
 	mutex_unlock(&sync->lock);
 	return rc;

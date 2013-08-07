@@ -157,7 +157,7 @@ ion_bail_out:
 
 static void res_trk_pmem_free(struct ddl_buf_addr *addr)
 {
-	/*TODO: Enhance for pmem*/
+	/* TODO Pmem*/
 	struct ddl_context *ddl_context;
 	ddl_context = ddl_get_context();
 	if (ddl_context->video_ion_client) {
@@ -549,17 +549,12 @@ int res_trk_update_bus_perf_level(struct vcd_dev_ctxt *dev_ctxt, u32 perf_level)
 
 	if (dev_ctxt->reqd_perf_lvl + dev_ctxt->curr_perf_lvl == 0)
 		bus_clk_index = 2;
-	else if ((!turbo_supported || !turbo_enabled) && bus_clk_index == 3) {
-		if (!turbo_supported)
-			VCDRES_MSG_MED("Warning: Turbo mode not supported "\
-					" falling back to 1080p bus\n");
+	else if (resource_context.vidc_platform_data->disable_turbo
+						&& bus_clk_index == 3) {
+		VCDRES_MSG_ERROR("Warning: Turbo mode not supported "
+				" falling back to 1080p bus\n");
 		bus_clk_index = 2;
 	}
-
-	if (bus_clk_index == 3)
-		dev_ctxt->turbo_mode_set = true;
-	else
-		dev_ctxt->turbo_mode_set = false;
 
 	bus_clk_index = (bus_clk_index << 1) + (client_type + 1);
 	VCDRES_MSG_LOW("%s(), bus_clk_index = %d", __func__, bus_clk_index);
@@ -586,7 +581,8 @@ u32 res_trk_set_perf_level(u32 req_perf_lvl, u32 *pn_set_perf_lvl,
 
 	VCDRES_MSG_LOW("%s(), req_perf_lvl = %d", __func__, req_perf_lvl);
 
-	if (!turbo_supported && req_perf_lvl > RESTRK_1080P_MAX_PERF_LEVEL) {
+	if (resource_context.vidc_platform_data->disable_turbo
+			&& req_perf_lvl > RESTRK_1080P_MAX_PERF_LEVEL) {
 		VCDRES_MSG_ERROR("%s(): Turbo not supported! dev_ctxt(%p)\n",
 			__func__, dev_ctxt);
 	}
@@ -616,11 +612,10 @@ u32 res_trk_set_perf_level(u32 req_perf_lvl, u32 *pn_set_perf_lvl,
 		*pn_set_perf_lvl = RESTRK_1080P_TURBO_PERF_LEVEL;
 	}
 
-	if ((!turbo_supported || !dev_ctxt->turbo_mode_set) &&
-		 *pn_set_perf_lvl == RESTRK_1080P_TURBO_PERF_LEVEL) {
-		if (!turbo_supported)
-			VCDRES_MSG_ERROR("Warning: Turbo mode not supported "\
-					" falling back to 1080p clocks\n");
+	if (resource_context.vidc_platform_data->disable_turbo &&
+		*pn_set_perf_lvl == RESTRK_1080P_TURBO_PERF_LEVEL) {
+		VCDRES_MSG_ERROR("Warning: Turbo mode not supported "
+				" falling back to 1080p clocks\n");
 		vidc_freq = vidc_clk_table[2];
 		*pn_set_perf_lvl = RESTRK_1080P_MAX_PERF_LEVEL;
 	}
