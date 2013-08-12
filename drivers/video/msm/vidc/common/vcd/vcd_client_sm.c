@@ -554,6 +554,10 @@ static u32 vcd_set_property_cmn
 		  cctxt->bframe = iperiod->b_frames;
 		  break;
 	   }
+	case VCD_REQ_PERF_LEVEL:
+		rc = vcd_req_perf_level(cctxt,
+			(struct vcd_property_perf_level *)prop_val);
+		break;
 	case VCD_I_VOP_TIMING_CONSTANT_DELTA:
 	   {
 		   struct vcd_property_vop_timing_constant_delta *delta =
@@ -568,10 +572,6 @@ static u32 vcd_set_property_cmn
 		   }
 		   break;
 	   }
-	case VCD_REQ_PERF_LEVEL:
-		rc = vcd_req_perf_level(cctxt,
-			(struct vcd_property_perf_level *)prop_val);
-		break;
 	default:
 		{
 			break;

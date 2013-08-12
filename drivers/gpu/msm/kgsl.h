@@ -215,7 +215,7 @@ static inline uint8_t *kgsl_gpuaddr_to_vaddr(struct kgsl_memdesc *memdesc,
 			memdesc->ops->map_kernel_mem(memdesc)))
 			return NULL;
 
-	return memdesc->hostptr + (gpuaddr - memdesc->gpuaddr);
+	return memdesc->hostptr;
 }
 
 static inline int timestamp_cmp(unsigned int a, unsigned int b)

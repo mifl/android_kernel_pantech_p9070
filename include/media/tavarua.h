@@ -531,7 +531,6 @@ enum {
 	TWELVE_BYTE,
 	THIRTEEN_BYTE
 };
-
 #define XFR_READ		(0)
 #define XFR_WRITE		(1)
 #define XFR_MODE_OFFSET		(0)

@@ -24,6 +24,7 @@ enum timing_data {
 	DEC_OP_TIME,
 	DEC_IP_TIME,
 	ENC_OP_TIME,
+	ENC_SLICE_OP_TIME,
 	MAX_TIME_DATA
 };
 
