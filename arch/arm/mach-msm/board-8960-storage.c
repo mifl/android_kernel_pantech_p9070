@@ -292,25 +292,6 @@ static struct mmc_platform_data msm8960_sdc1_data = {
 	.nonremovable	= 1,
 	.vreg_data	= &mmc_slot_vreg_data[SDCC1],
 	.pin_data	= &mmc_slot_pin_data[SDCC1],
-	.mpm_sdiowakeup_int = MSM_MPM_PIN_SDC1_DAT1,
-	.msm_bus_voting_data = &sps_to_ddr_bus_voting_data,
-};
-#endif
-
-#ifdef CONFIG_MMC_MSM_SDC2_SUPPORT
-static unsigned int sdc2_sup_clk_rates[] = {
-	400000, 24000000, 48000000
-};
-
-static struct mmc_platform_data msm8960_sdc2_data = {
-	.ocr_mask       = MMC_VDD_165_195,
-	.mmc_bus_width  = MMC_CAP_4_BIT_DATA,
-	.sup_clk_table  = sdc2_sup_clk_rates,
-	.sup_clk_cnt    = ARRAY_SIZE(sdc2_sup_clk_rates),
-	.pclk_src_dfab  = 1,
-	.vreg_data      = &mmc_slot_vreg_data[SDCC2],
-	.pin_data       = &mmc_slot_pin_data[SDCC2],
-	.sdiowakeup_irq = MSM_GPIO_TO_INT(90),
 	.msm_bus_voting_data = &sps_to_ddr_bus_voting_data,
 };
 #endif
@@ -337,25 +318,6 @@ static struct mmc_platform_data msm8960_sdc3_data = {
 	.uhs_caps	= (MMC_CAP_UHS_SDR12 | MMC_CAP_UHS_SDR25 |
 			MMC_CAP_UHS_SDR50 | MMC_CAP_UHS_DDR50 |
 			MMC_CAP_UHS_SDR104 | MMC_CAP_MAX_CURRENT_600),
-	.mpm_sdiowakeup_int = MSM_MPM_PIN_SDC3_DAT1,
-	.msm_bus_voting_data = &sps_to_ddr_bus_voting_data,
-};
-#endif
-
-#ifdef CONFIG_MMC_MSM_SDC4_SUPPORT
-static unsigned int sdc4_sup_clk_rates[] = {
-	400000, 24000000, 48000000
-};
-
-static struct mmc_platform_data msm8960_sdc4_data = {
-	.ocr_mask       = MMC_VDD_165_195,
-	.mmc_bus_width  = MMC_CAP_4_BIT_DATA,
-	.sup_clk_table  = sdc4_sup_clk_rates,
-	.sup_clk_cnt    = ARRAY_SIZE(sdc4_sup_clk_rates),
-	.pclk_src_dfab  = 1,
-	.vreg_data      = &mmc_slot_vreg_data[SDCC4],
-	.pin_data       = &mmc_slot_pin_data[SDCC4],
-	.sdiowakeup_irq = MSM_GPIO_TO_INT(85),
 	.msm_bus_voting_data = &sps_to_ddr_bus_voting_data,
 };
 #endif

@@ -248,7 +248,7 @@ static int msm_send_close_server(int vnode_id)
 {
 	int rc = 0;
 	struct msm_ctrl_cmd ctrlcmd;
-	D("%s\n", __func__);
+	pr_err("%s\n", __func__);
 	ctrlcmd.type	   = MSM_V4L2_CLOSE;
 	ctrlcmd.timeout_ms = 10000;
 	ctrlcmd.length	 = strnlen(g_server_dev.config_info.config_dev_name[0],
@@ -2118,7 +2118,7 @@ static long msm_v4l2_evt_notify(struct msm_cam_media_controller *mctl,
 		ERR_COPY_FROM_USER();
 		return -EFAULT;
 	}
-
+	pr_err("%s: Sending event to HAL with type %x\n", __func__, v4l2_ev.type);
 	pcam = mctl->sync.pcam_sync;
 	ktime_get_ts(&v4l2_ev.timestamp);
 	v4l2_event_queue(pcam->pvdev, &v4l2_ev);
@@ -2265,6 +2265,15 @@ static long msm_ioctl_config(struct file *fp, unsigned int cmd,
 		if (copy_from_user(&config_cam->mem_map, (void __user *)arg,
 				sizeof(struct msm_mem_map_info)))
 			rc = -EINVAL;
+		break;
+
+	case MCTL_CAM_IOCTL_SET_FOCUS:
+		if (copy_from_user(&config_cam->p_mctl->sync.focus_state,
+			(void __user *)arg, sizeof(uint32_t))) {
+			ERR_COPY_FROM_USER();
+			rc = -EINVAL;
+			break;
+		}
 		break;
 
 	default:{

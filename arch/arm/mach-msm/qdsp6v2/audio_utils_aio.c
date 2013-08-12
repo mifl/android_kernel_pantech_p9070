@@ -1,6 +1,6 @@
 /* Copyright (C) 2008 Google, Inc.
  * Copyright (C) 2008 HTC Corporation
- * Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2009-2011, The Linux Foundation. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -848,6 +848,7 @@ static int audio_aio_ion_add(struct q6audio_aio *audio,
 		pr_err("%s: could not get physical address\n", __func__);
 		goto ion_error;
 	}
+	kvaddr = (unsigned long)temp_ptr;
 
 	rc = audio_aio_ion_check(audio, info->vaddr, len);
 	if (rc < 0) {

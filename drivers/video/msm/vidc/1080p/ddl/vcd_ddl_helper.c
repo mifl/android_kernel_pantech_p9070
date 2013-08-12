@@ -398,6 +398,8 @@ void ddl_release_client_internal_buffers(struct ddl_client_context *ddl)
 		struct ddl_encoder_data *encoder =
 			&(ddl->codec_data.encoder);
 		ddl_pmem_free(&encoder->seq_header);
+		ddl_pmem_free(&encoder->batch_frame.slice_batch_in);
+		ddl_pmem_free(&encoder->batch_frame.slice_batch_out);
 		ddl_vidc_encode_dynamic_property(ddl, false);
 		encoder->dynamic_prop_change = 0;
 		ddl_free_enc_hw_buffers(ddl);
@@ -470,7 +472,7 @@ struct ddl_client_context *ddl_get_current_ddl_client_for_channel_id(
 		ddl = ddl_context->current_ddl[1];
 	else {
 		DDL_MSG_LOW("STATE-CRITICAL-FRMRUN");
-		DDL_MSG_ERROR("Unexpected channel ID = %d", channel_id);
+		DDL_MSG_LOW("Unexpected channel ID = %d", channel_id);
 		ddl = NULL;
 	}
 	return ddl;

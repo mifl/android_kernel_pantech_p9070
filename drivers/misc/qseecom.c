@@ -1,5 +1,4 @@
 
-
 /* Qualcomm Secure Execution Environment Communicator (QSEECOM) driver
  *
  * Copyright (c) 2012, The Linux Foundation. All rights reserved.
@@ -670,6 +669,13 @@ static int qseecom_load_app(struct qseecom_dev_handle *data, void __user *argp)
 			return -EFAULT;
 		}
 
+		if (resp.result == QSEOS_RESULT_FAILURE) {
+			pr_err("scm_call failed resp.result QSEOS_RESULT_FAILURE -1\n");
+			if (!IS_ERR_OR_NULL(ihandle))
+				ion_free(qseecom.ion_clnt, ihandle);
+			return -EFAULT;
+		}
+
 		if (resp.result == QSEOS_RESULT_INCOMPLETE) {
 			ret = __qseecom_process_incomplete_cmd(data, &resp);
 			if (ret) {
@@ -752,6 +758,8 @@ static int qseecom_unload_app(struct qseecom_dev_handle *data)
 					unload = __qseecom_cleanup_app(data);
 					list_del(&ptr_app->list);
 					kzfree(ptr_app);
+					pr_warn("App id %d now unloaded\n",
+							ptr_app->app_id);
 					break;
 				} else {
 					ptr_app->ref_cnt--;

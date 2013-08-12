@@ -44,10 +44,6 @@
 #define KGSL_PAGETABLE_ENTRIES(_sz) (((_sz) >> PAGE_SHIFT) + \
 				     KGSL_PT_EXTRA_ENTRIES)
 
-#define KGSL_PAGETABLE_SIZE \
-ALIGN(KGSL_PAGETABLE_ENTRIES(CONFIG_MSM_KGSL_PAGE_TABLE_SIZE) * \
-KGSL_PAGETABLE_ENTRY_SIZE, PAGE_SIZE)
-
 #ifdef CONFIG_KGSL_PER_PROCESS_PAGE_TABLE
 #define KGSL_PAGETABLE_COUNT (CONFIG_MSM_KGSL_PAGE_TABLE_COUNT)
 #else
@@ -215,7 +211,7 @@ static inline uint8_t *kgsl_gpuaddr_to_vaddr(struct kgsl_memdesc *memdesc,
 			memdesc->ops->map_kernel_mem(memdesc)))
 			return NULL;
 
-	return memdesc->hostptr + (gpuaddr - memdesc->gpuaddr);
+	return memdesc->hostptr;
 }
 
 static inline int timestamp_cmp(unsigned int a, unsigned int b)

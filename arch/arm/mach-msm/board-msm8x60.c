@@ -3339,6 +3339,8 @@ static struct resource msm_fb_resources[] = {
 	}
 };
 
+static void set_mdp_clocks_for_wuxga(void);
+
 static int msm_fb_detect_panel(const char *name)
 {
 	if (machine_is_msm8x60_fluid()) {
@@ -3393,8 +3395,11 @@ static int msm_fb_detect_panel(const char *name)
 
 	if (!strncmp(name, HDMI_PANEL_NAME,
 			strnlen(HDMI_PANEL_NAME,
-				PANEL_NAME_MAX_LEN)))
+				PANEL_NAME_MAX_LEN))) {
+		if (hdmi_is_primary)
+			set_mdp_clocks_for_wuxga();
 		return 0;
+	}
 
 	if (!strncmp(name, TVOUT_PANEL_NAME,
 			strnlen(TVOUT_PANEL_NAME,
@@ -3815,6 +3820,7 @@ void __init msm8x60_set_display_params(char *prim_panel, char *ext_panel)
 			pr_debug("HDMI is the primary display by"
 				" boot parameter\n");
 			hdmi_is_primary = 1;
+			set_mdp_clocks_for_wuxga();
 		}
 	}
 	if (strnlen(ext_panel, PANEL_NAME_MAX_LEN)) {
@@ -4527,6 +4533,7 @@ static struct regulator_consumer_supply vreg_consumers_PM8058_L15[] = {
 	REGULATOR_SUPPLY("8058_l15",		NULL),
 	REGULATOR_SUPPLY("cam_vana",		"1-001a"),
 	REGULATOR_SUPPLY("cam_vana",		"1-006c"),
+	REGULATOR_SUPPLY("cam_vana",		"1-0078"),
 };
 static struct regulator_consumer_supply vreg_consumers_PM8058_L16[] = {
 	REGULATOR_SUPPLY("8058_l16",		NULL),
@@ -4559,6 +4566,7 @@ static struct regulator_consumer_supply vreg_consumers_PM8058_L25[] = {
 	REGULATOR_SUPPLY("8058_l25",		NULL),
 	REGULATOR_SUPPLY("cam_vdig",		"1-001a"),
 	REGULATOR_SUPPLY("cam_vdig",		"1-006c"),
+	REGULATOR_SUPPLY("cam_vdig",		"1-0078"),
 };
 static struct regulator_consumer_supply vreg_consumers_PM8058_S0[] = {
 	REGULATOR_SUPPLY("8058_s0",		NULL),
@@ -4579,6 +4587,7 @@ static struct regulator_consumer_supply vreg_consumers_PM8058_LVS0[] = {
 	REGULATOR_SUPPLY("8058_lvs0",		NULL),
 	REGULATOR_SUPPLY("cam_vio",			"1-001a"),
 	REGULATOR_SUPPLY("cam_vio",			"1-006c"),
+	REGULATOR_SUPPLY("cam_vio",			"1-0078"),
 };
 static struct regulator_consumer_supply vreg_consumers_PM8058_LVS1[] = {
 	REGULATOR_SUPPLY("8058_lvs1",		NULL),
@@ -10833,51 +10842,6 @@ static struct msm_bus_vectors mdp_init_vectors[] = {
 	},
 };
 
-#ifdef CONFIG_FB_MSM_HDMI_AS_PRIMARY
-static struct msm_bus_vectors hdmi_as_primary_vectors[] = {
-	/* If HDMI is used as primary */
-	 {
-		.src = MSM_BUS_MASTER_MDP_PORT0,
-		.dst = MSM_BUS_SLAVE_SMI,
-		.ab = 2000000000,
-		.ib = 2000000000,
-	 },
-	 /* Master and slaves can be from different fabrics */
-	 {
-		.src = MSM_BUS_MASTER_MDP_PORT0,
-		.dst = MSM_BUS_SLAVE_EBI_CH0,
-		.ab = 2000000000,
-		.ib = 2000000000,
-	 },
-};
-
-static struct msm_bus_paths mdp_bus_scale_usecases[] = {
-	{
-		ARRAY_SIZE(mdp_init_vectors),
-		mdp_init_vectors,
-	},
-	{
-		ARRAY_SIZE(hdmi_as_primary_vectors),
-		hdmi_as_primary_vectors,
-	},
-	{
-		ARRAY_SIZE(hdmi_as_primary_vectors),
-		hdmi_as_primary_vectors,
-	},
-	{
-		ARRAY_SIZE(hdmi_as_primary_vectors),
-		hdmi_as_primary_vectors,
-	},
-	{
-		ARRAY_SIZE(hdmi_as_primary_vectors),
-		hdmi_as_primary_vectors,
-	},
-	{
-		ARRAY_SIZE(hdmi_as_primary_vectors),
-		hdmi_as_primary_vectors,
-	},
-};
-#else
 #ifdef CONFIG_FB_MSM_LCDC_DSUB
 static struct msm_bus_vectors mdp_sd_smi_vectors[] = {
 	/* Default case static display/UI/2d/3d if FB SMI */
@@ -11072,7 +11036,6 @@ static struct msm_bus_paths mdp_bus_scale_usecases[] = {
 		mdp_1080p_vectors,
 	},
 };
-#endif
 static struct msm_bus_scale_pdata mdp_bus_scale_pdata = {
 	mdp_bus_scale_usecases,
 	ARRAY_SIZE(mdp_bus_scale_usecases),
@@ -11300,44 +11263,11 @@ static int atv_dac_power(int on)
 }
 #endif
 
-#ifdef CONFIG_FB_MSM_MIPI_DSI
-int mdp_core_clk_rate_table[] = {
-// [LS5] 2011.08.18 by lived
-#if defined (CONFIG_FB_MSM_MIPI_DSI_SAMSUNG) || defined (CONFIG_FB_MSM_MIPI_DSI_SONY)
-	128000000,
-	128000000,
-	177780000,
-#else
-	85330000,
-	128000000,
-	160000000,
-#endif
-	200000000,
-};
-#else
-int mdp_core_clk_rate_table[] = {
-#if defined(CONFIG_MACH_MSM8X60_PRESTO) || defined(CONFIG_MACH_MSM8X60_QUANTINA)
-	85330000,
-#else /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
-	59080000,
-#endif /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
-	128000000,
-	128000000,
-	200000000,
-};
-#endif
-
 static struct msm_panel_common_pdata mdp_pdata = {
 #ifndef CONFIG_PANTECH_AUDIO_PRESTO_AUDIENCE2020
 	.gpio = MDP_VSYNC_GPIO,
 #endif /* CONFIG_PANTECH_AUDIO_PRESTO_AUDIENCE2020 */
-#ifdef CONFIG_FB_MSM_HDMI_AS_PRIMARY // ?? ICS_PATCH30145 ??
-	.mdp_core_clk_rate = 200000000,
-#else /* CONFIG_FB_MSM_HDMI_AS_PRIMARY */
-	.mdp_core_clk_rate = 59080000,
-#endif /* CONFIG_FB_MSM_HDMI_AS_PRIMARY */
-	.mdp_core_clk_table = mdp_core_clk_rate_table,
-	.num_mdp_clk = ARRAY_SIZE(mdp_core_clk_rate_table),
+	.mdp_max_clk = 200000000,
 #ifdef CONFIG_MSM_BUS_SCALING
 	.mdp_bus_scale_table = &mdp_bus_scale_pdata,
 #endif
@@ -11429,9 +11359,7 @@ static struct tvenc_platform_data atv_pdata = {
 static void __init msm_fb_add_devices(void)
 {
 #ifdef CONFIG_FB_MSM_LCDC_DSUB
-	mdp_pdata.mdp_core_clk_table = NULL;
-	mdp_pdata.num_mdp_clk = 0;
-	mdp_pdata.mdp_core_clk_rate = 200000000;
+	mdp_pdata.mdp_max_clk = 200000000;
 #endif
 	if (machine_is_msm8x60_rumi3())
 		msm_fb_register_device("mdp", NULL);
@@ -11574,6 +11502,7 @@ static void __init bt_power_init(void)
 	msm_bt_power_device.dev.platform_data = &bluetooth_power;
 }
 #else /* CONFIG_PANTECH_BT */
+
 #if (defined(CONFIG_MARIMBA_CORE)) && \
 	(defined(CONFIG_MSM_BT_POWER) || defined(CONFIG_MSM_BT_POWER_MODULE))
 
@@ -11914,6 +11843,41 @@ out:
 
 #endif /*CONFIG_MARIMBA_CORE, CONFIG_MSM_BT_POWER, CONFIG_MSM_BT_POWER_MODULE*/
 #endif /* CONFIG_PANTECH_BT */
+
+/**
+ * Set MDP clocks to high frequency to avoid underflow when
+ * using high resolution 1200x1920 WUXGA/HDMI as primary panels
+ */
+static void set_mdp_clocks_for_wuxga(void)
+{
+    mdp_sd_smi_vectors[0].ab = 2000000000;
+    mdp_sd_smi_vectors[0].ib = 2000000000;
+    mdp_sd_smi_vectors[1].ab = 2000000000;
+    mdp_sd_smi_vectors[1].ib = 2000000000;
+
+    mdp_sd_ebi_vectors[0].ab = 2000000000;
+    mdp_sd_ebi_vectors[0].ib = 2000000000;
+    mdp_sd_ebi_vectors[1].ab = 2000000000;
+    mdp_sd_ebi_vectors[1].ib = 2000000000;
+
+    mdp_vga_vectors[0].ab = 2000000000;
+    mdp_vga_vectors[0].ib = 2000000000;
+    mdp_vga_vectors[1].ab = 2000000000;
+    mdp_vga_vectors[1].ib = 2000000000;
+
+    mdp_720p_vectors[0].ab = 2000000000;
+    mdp_720p_vectors[0].ib = 2000000000;
+    mdp_720p_vectors[1].ab = 2000000000;
+    mdp_720p_vectors[1].ib = 2000000000;
+
+    mdp_1080p_vectors[0].ab = 2000000000;
+    mdp_1080p_vectors[0].ib = 2000000000;
+    mdp_1080p_vectors[1].ab = 2000000000;
+    mdp_1080p_vectors[1].ib = 2000000000;
+
+    mdp_pdata.mdp_max_clk = 200000000;
+}
+
 
 static void __init msm8x60_cfg_smsc911x(void)
 {
